@@ -1,0 +1,3 @@
+MENU: Scripts/BuffTimers/menu.lua
+PLAYER: Scripts/BuffTimers/settings.lua
+PLAYER: Scripts/BuffTimers/player.lua
