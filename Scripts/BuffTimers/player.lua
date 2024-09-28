@@ -163,10 +163,10 @@ local dummyLayout = ui.content {
 }
 
 
-local tableOfLayouts = com.createBuffsContent('pad')
+--[[ local tableOfLayouts = com.createBuffsContent('pad')
 local flexContent = com.ui.createFlex(tableOfLayouts)
 local buffBoxElement = com.ui.createElementContainer(flexContent)
-
+ ]]
 local newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',36)
 --traverseTable(newRootLayouts)
 local newFlexRow = com.ui.createFlex(newRootLayouts)
@@ -195,11 +195,11 @@ local function updateUI_Element()
     newFlexRow = com.ui.createFlex(newRootLayouts)
     newFlexRow.props.size = v2(40*15,40*4)
     --if not next(buffBoxElement) then return end --Doesn't work with userData
-    tableOfLayouts = com.createBuffsContent('pad')
-    flexContent = com.ui.createFlex(tableOfLayouts)
-    local currLayout = buffBoxElement.layout
+    --tableOfLayouts = com.createBuffsContent('pad')
+    --flexContent = com.ui.createFlex(tableOfLayouts)
+    --local currLayout = buffBoxElement.layout
     --print(currLayout.content)
-    currLayout.content = ui.content{flexContent}
+    --currLayout.content = ui.content{flexContent}
     
     local currNewBuff = newBuffBoxElement.layout
     currNewBuff.content = ui.content{newFlexRow}
