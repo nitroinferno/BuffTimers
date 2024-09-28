@@ -230,7 +230,7 @@ local function updateUI_Element()
     buffBoxElement = nil
     buffBoxElement = com.ui.createElementContainer(flexContent) ]]
     newBuffBoxElement:update()
-    buffBoxElement:update()
+    --buffBoxElement:update()
 end
 
 
@@ -257,7 +257,7 @@ local function onKeyPress(key)
 			buffElement = nil
 			stopUpdating()
 		else
-			buffElement = ui.create(someLayout)
+			buffElement = ui.create(newFlexRow)
 			startUpdating()
 		end
 	end
