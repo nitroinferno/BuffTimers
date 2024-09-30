@@ -25,6 +25,7 @@ local async = require('openmw.async')
 local v2 = util.vector2
 local color = util.color
 local com = require('Scripts.BuffTimers.common')
+local shader = require('Scripts.BuffTimers.radialSwipe')
 local auxUi = require('openmw_aux.ui')
 
 local modInfo = require("Scripts.BuffTimers.modInfo")
@@ -167,16 +168,64 @@ local dummyLayout = ui.content {
 local flexContent = com.ui.createFlex(tableOfLayouts)
 local buffBoxElement = com.ui.createElementContainer(flexContent)
  ]]
-local newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',36)
+local newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',iconSize)
 --traverseTable(newRootLayouts)
+
 local newFlexRow = com.ui.createFlex(newRootLayouts)
 newFlexRow.props.size = v2(40*15,40*4)
 local newBuffBoxElement = com.ui.createElementContainer(newFlexRow)
 newBuffBoxElement.layout.props.relativePosition = v2(0.5,0.1)
+
+local newRootLayouts2, wrapFxIcons, fxData = com.createRootFlexLayouts('pad',iconSize, com.fltBuffTimers)
+local rowsOfIcons = com.flexWrapper(newRootLayouts2,{iconsPerRow = 4})
+--[[ for i, v in ipairs(rowsOfIcons) do
+    print(rowsOfIcons[i].name, v)
+  
+    for key, data in pairs(v) do
+        print(key, data)
+        if key == 'content' then
+            for idex=1, #v.content do
+                print("   `--> "..v.content[idex].name)
+            end
+        end
+    end
+
+end ]]
+
+local flexWrap = com.ui.createFlex(rowsOfIcons,false)
+print(com.calculateRootFlexSize(rowsOfIcons))
+--removed or v2(40*12,60*6) from below
+flexWrap.props.size = com.calculateRootFlexSize(rowsOfIcons)
+flexWrap.props.arrange = ui.ALIGNMENT.Center
+--flexWrap.props.horizontal = false
+print(flexWrap.props.arrange)
+local flexWrapElement = com.ui.createElementContainer(flexWrap)
+flexWrapElement.layout.props.relativePosition = v2(0,0)
+
 --[[ traverseTable(newRootLayouts)
 changeIcon[1].props.alpha = 0.3
 print("-----------------revising alpha 1st icon to 0.3!!----------------")
 traverseTable(newRootLayouts) ]]
+flexWrapElement.layout.events = {
+    mousePress = async:callback(function(coord, layout)
+		layout.userData.doDrag = true
+		layout.userData.lastMousePos = coord.position
+		print("mouseclicked!", coord.position, layout.name)
+		end),
+    mouseRelease = async:callback(function(_, layout)
+		layout.userData.doDrag = false
+		print("mousereleased!")
+		end),
+    mouseMove = async:callback(function(coord, layout)
+      if not layout.userData.doDrag then return end
+      local props = layout.props
+      props.position = props.position - (layout.userData.lastMousePos - coord.position)
+	  flexWrapElement:update()
+      layout.userData.lastMousePos = coord.position
+		end),
+    }
+
+--local uiEl = com.ui.toolTipBox(fxData[2])
 
 
 --traverseTable(tableOfLayouts)
@@ -188,9 +237,10 @@ traverseTable(newRootLayouts) ]]
 local buffElement = {}
 
 local function updateUI_Element()
+    com.destroyTooltip(true)
     local testingLayout = ui.content{com.createBuffsContent('pad')}
     getContentKeys(testingLayout[1], false)
-    
+    --print(com.calculateRootFlexSize(newRootLayouts[1].content))
     newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',iconSize)
     newFlexRow = com.ui.createFlex(newRootLayouts)
     newFlexRow.props.size = v2(40*15,40*4)
@@ -204,6 +254,14 @@ local function updateUI_Element()
     local currNewBuff = newBuffBoxElement.layout
     currNewBuff.content = ui.content{newFlexRow}
 
+    newRootLayouts2, wrapFxIcons = com.createRootFlexLayouts('pad',iconSize, com.fltBuffTimers)
+    rowsOfIcons = com.flexWrapper(newRootLayouts2,{iconsPerRow = 4})
+    flexWrap = com.ui.createFlex(rowsOfIcons,false)
+    flexWrap.props.size = com.calculateRootFlexSize(rowsOfIcons)
+    flexWrap.props.arrange = ui.ALIGNMENT.Center
+    local curflexWrapElement = flexWrapElement.layout
+    curflexWrapElement.content = ui.content{flexWrap}
+
     updateAlpha()
 
     for i,layout in ipairs(newRootLayouts) do
@@ -212,24 +270,23 @@ local function updateUI_Element()
         if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
             --print(fx_icons[i].props.alpha and fx_icons[i].props.alpha)
             fx_icons[i].props.alpha = alpha
-            print(fx_icons[i].props.alpha and fx_icons[i].name .." ".. fx_icons[i].props.alpha)
+
+            --print(fx_icons[i].props.alpha and fx_icons[i].name .." ".. fx_icons[i].props.alpha)
             --print(layout.content[1].props.alpha and layout.content[1].props.alpha)
             --layout.content[1].props.alpha = alpha
             --print(layout.content[1].props.alpha and layout.content[1].props.alpha)
         end
     end
-
-
---[[     for i, flexLay in ipairs(newRootLayouts) do
-        if flexLay.userdata.Duration and flexLay.userData.DurationLeft > 0 then
-            timeRem[i].props.text = flexLay.userData.DurationLeft
+    for i,layout in ipairs(newRootLayouts2) do
+        --print(newRootLayouts[i].userdata.DurationLeft)
+        --print(layout.content[1].userdata.effectInfo.durationLeft)
+        if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
+            wrapFxIcons[i].props.alpha = alpha
         end
-    end ]]
-    --The below code works with destroying and recreating the whole buffbox
---[[     buffBoxElement:destroy()
-    buffBoxElement = nil
-    buffBoxElement = com.ui.createElementContainer(flexContent) ]]
+    end
+   
     newBuffBoxElement:update()
+    flexWrapElement:update()
     --buffBoxElement:update()
 end
 
