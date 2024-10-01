@@ -11,6 +11,13 @@ local storage = require("openmw.storage")
 local modInfo = require("Scripts.BuffTimers.modInfo")
 local shader = require('Scripts.BuffTimers.radialSwipe')
 local uiSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
+local iconOptions = uiSettings:get("iconOptions")
+local timerColor = uiSettings:get("timerColor")
+local detailTextColor = uiSettings:get("detailTextColor")
+local iconPadding = uiSettings:get("iconPadding")
+local buffLimit = uiSettings:get("buffLimit")
+
+--print("COLOR IS___________",detailTextColor)
 
 local templates = I.MWUI.templates
 local v2 = util.vector2
@@ -184,15 +191,17 @@ local common = {
         [magRecs[mgFx.WaterBreathing].id] = true,
         [magRecs[mgFx.WaterWalking].id] = true,
     },
-    skillAttributeFx = {
-        [magRecs[mgFx.DamageAttribute].id] = true,
-        [magRecs[mgFx.DamageSkill].id] = true,
-        [magRecs[mgFx.DrainAttribute].id] = true,
-        [magRecs[mgFx.DrainSkill].id] = true,
+    skillAttributePos_Fx = {
         [magRecs[mgFx.FortifySkill].id] = true,
         [magRecs[mgFx.FortifyAttribute].id] = true,
         [magRecs[mgFx.RestoreSkill].id] = true,
         [magRecs[mgFx.RestoreAttribute].id] = true,
+    },
+    skillAttributeNeg_Fx = {
+        [magRecs[mgFx.DamageAttribute].id] = true,
+        [magRecs[mgFx.DamageSkill].id] = true,
+        [magRecs[mgFx.DrainAttribute].id] = true,
+        [magRecs[mgFx.DrainSkill].id] = true,
     },
     attributeAlias = {
         ['agility'] = 'AGIL',
@@ -748,7 +757,7 @@ common.ui.makeIconContent = function(iconPath, args)
     args = args or {}  -- Initialize args to an empty table if nil
     local sz = (args and args.size) and args.size or 24
     local iconWidget = {
-        name = 'iconWidget/'..iconPath,
+        name = iconPath and 'iconWidget/'..iconPath or 'iconWidget/',
         type = ui.TYPE.Image,
 		props = {
 			resource = ui.texture({path = iconPath or 'white'}), -- No issue with the icon.. why isn't this dispalying. 
@@ -886,6 +895,7 @@ end
 
 -- New stuff 9-22-2024
 common.ui.createFlex = function(inputContent, direction)
+    if not inputContent then return end
     local dir = true
     if direction ~= nil then
         dir = direction
@@ -929,6 +939,7 @@ common.ui.boxForFlex = function(inputContent, pos)
 end
 
 common.calculateRootFlexSize = function(children)
+    if not children then print("Nothing to calculate size on") return end
     local maxWidth = 0
     local totalHeight = 0
     --local padding = 0  -- Example padding value
@@ -950,6 +961,9 @@ end
 
 -- New stuff 9-22-2024
 common.ui.createElementContainer = function(inputContent, pos)
+    -- Consider adding: props = {size= v2(200,200)} to the table as default
+    -- Perhaps check if its length if table size is zero
+    if not inputContent then inputContent = {} end -- Need to handle default state if input content is nil.
     local element = ui.create {
 		layer = 'Windows',
 		template = I.MWUI.templates.boxTransparent,
@@ -970,7 +984,7 @@ common.ui.createElementContainer = function(inputContent, pos)
 end
 --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
---new 09-25-2024
+--new 09-25-2024 *** if the filter returns nothing(false), then this function returns empty tables
 common.createRootFlexLayouts = function(returnType,iconSize, fltr)
 	local spellList = Actor.activeSpells(self)
 	local myTemplate = {}
@@ -1005,14 +1019,16 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             local inText = common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
             if inText then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
+                magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-"..magnitudeStr or magnitudeStr
                 -- Check if either inText or magnitude is longer than 3 or overall characters > 6
                 if (#inText > 3 or #magnitudeStr > 3) and (#inText + #magnitudeStr) > 6 then
                     --print('inText>3', #inText, fx.name)
-                    inText = inText .. ':\n' .. magnitudeStr
+                    inText = inText .. ':\n' ..magnitudeStr
                 else
                     inText = inText .. ': ' .. magnitudeStr
                 end
                 fx_text = common.ui.makeTextContent(string.lower(inText), sizeTable)
+                fx_text.props.textColor = detailTextColor
                 --print(fx_text.name,fx_text.props.textSize)
             else
                 --If it has no effect just assign it a space holder. 
@@ -1061,6 +1077,7 @@ end
 --09-27-2024
 common.flexWrapper = function(content, args)
     -- Extract parameters from args
+    if not content or #content == 0 then return end
     local iconScale = args.iconScale or 1.0  -- Default to 1.0 if not provided
     local textScale = args.textScale or 1.0  -- Default to 1.0 if not provided
     local iconsPerRow = args.iconsPerRow or 2  -- Default to 10 icons per row if not provided
@@ -1070,6 +1087,9 @@ common.flexWrapper = function(content, args)
     local padding = false
     --print(content[1].name)
     --print(content[1].name)
+    
+    --Need to handle if content[1] doesnt exist before trying to index it.
+    --Check if its padded if so, add that to the size calculation. 
     if content[1].name and string.sub(content[1].name , 1, 3) == 'pad' then
         rootSize = common.calculateRootFlexSize(content[1].content)
         padding = true
@@ -1151,7 +1171,7 @@ common.ui.toolTipBox = function(fxData,position)
     TOOLTIP_ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id -- Update the tracked tooltip unique id
     local inputText = fx.id ..'\n'..fx.name.." "
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
-    inputText = fx.magnitudeThisFrame and inputText..":"..fx.magnitudeThisFrame.." "
+    inputText = fx.magnitudeThisFrame and inputText..":"..util.round(fx.magnitudeThisFrame).." "
     inputText = fx.durationLeft and inputText.."Duration: "..common.formatDuration(fx.durationLeft)
     local displayText = common.ui.makeTextContent(inputText)
     displayText.props.textColor = color.rgb(202 / 255, 165 / 255, 96 / 255)
@@ -1205,7 +1225,7 @@ common.destroyTooltip = function(checkExistence)
 
     if TOOLTIP_ID and checkExistence then
         --print("... Checking Icon for tooltip still exists")
-        if not fxKey[TOOLTIP_ID] then
+        if not fxKey[TOOLTIP_ID] and TOOLTIP then
             --print("Icon_ID: "..TOOLTIP_ID.." does not Exist ... Destroying")
             TOOLTIP:destroy()  -- Assuming your tooltip object has a destroy method
             TOOLTIP = nil  -- Reset the global TOOLTIP variable

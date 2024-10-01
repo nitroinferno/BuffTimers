@@ -68,15 +68,16 @@ I.Settings.registerGroup {
 	permanentStorage = false,
 	settings = {
 		setting("showMessages", "checkbox", {}, "Show Messages", showMessagesDescription, true),
-		setting("iconScaling", "inputText", {}, "Icon and Text Size", "Set the icon size in pixels. Default is 24, min/max is: 1/100", 24),
+		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 24, min/max is: 1/100", 35),
 		setting("showBox","checkbox",{}, "Show Buff Borders", "Show the area box where buff icons will be rendered. Useful for positioning the buffs display area",true),
 		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("debuffAlign","checkbox",{}, "Align deBuffs Left", "deBuffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("splitBuffsDebuffs","checkbox",{}, "Split Buffs and Debuffs", "This will set buff and debuffs into two distinct containers that you can place anywhere on the HUD", true),
 		setting("iconOptions", "select", {l10n = modInfo.name, items = {"1", "2", "3"}}, "Icon Effect Selection", iconOptions, "1"),
 		setting("timerColor","color",{}, "Timer Text Color", "Text color for time countdown text", util.color.rgb(255, 255, 255)),
-		setting("detailTextColor","color",{}, "Buff Details Text Color", "Text color of skill, attribute and magnitude for buffs and debuffs ",util.color.hex('CAA560')),
+		setting("detailTextColor","color",{}, "Buff Details Text Color", "Text color of skill, attribute and magnitude for buffs and debuffs ",util.color.hex('DFC99F')),
 		setting("iconPadding","checkbox",{}, "Pad Icons", "Put Padding around the buff Icons", true),
+		setting("rowLimit","inputText",{defaultValue = 15}, "Max number of debuffs or buffs per row", "Set the limit on how many buffs or debuffs to show per row. Default is 15, min/max is: 1/100", 15),
 		setting("buffLimit","inputText",{defaultValue = 100}, "Max number of debuffs or buffs to display", "Set the limit on how many buffs or debuffs can be shown. Default is 100, min/max is: 1/100", 100),
 		
 	}
