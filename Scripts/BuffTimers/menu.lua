@@ -8,11 +8,11 @@ local DEFAULT_VALUE = 24 -- Default scaling value
 local MIN_VALUE = 1    -- Minimum allowable value
 local MAX_VALUE = 100     -- Maximum allowable value
 
-local function validateInput(input)
+local function validateInput(input, defaultValue)
     local numValue = tonumber(input)  -- Try converting the input to a number
     if not numValue then
         ui.showMessage("Invalid input! Resetting to default value.")
-        return DEFAULT_VALUE
+        return defaultValue or DEFAULT_VALUE
     end
 
     -- Clamp the number within the specified bounds
@@ -27,6 +27,7 @@ end
 I.Settings.registerRenderer(
     'inputText',
     function(value, set, arg)
+        local defaultValue = arg.defaultValue or DEFAULT_VALUE  -- Default to 24 if no default is provided
         return {
             template = I.MWUI.templates.box,
             content = ui.content({
@@ -47,7 +48,7 @@ I.Settings.registerRenderer(
                         },
                         events = {
                             textChanged = async:callback(function(newText)
-                                local validatedValue = validateInput(newText)  -- Validate the new input
+                                local validatedValue = validateInput(newText, defaultValue)  -- Validate the new input
                                 set(validatedValue)  -- Update the setting with the validated value
                             end),
                         },

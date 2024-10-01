@@ -7,6 +7,7 @@ Author:Nitro
 
 --Need to figure out how to save/load the position of the UI element 
 --Need to figure out if I need to handle spell overwrites.
+--Consider creating update or init functions. 
 
 
 local aux_util = require("openmw_aux.util")
@@ -47,13 +48,21 @@ local spellHotKeyPressed = false
 local debug = true
 local timer = nil
 local iconSize = userInterfaceSettings:get("iconScaling")
+local showBox = userInterfaceSettings:get("showBox")
+local alignSetting = userInterfaceSettings:get("buffAlign")
 
 -- Set the scale of the icons by checking for changes in the UI settings. 
 userInterfaceSettings:subscribe(async:callback(function(section, key)
     if key then
         --print("Something changed in: ", section)
         print('Value is changed:', key, '=', userInterfaceSettings:get(key))
-        iconSize = userInterfaceSettings:get(key)
+        if key == "iconScaling" then
+            iconSize = userInterfaceSettings:get(key)
+        elseif key == "hideBox" then
+            showBox = userInterfaceSettings:get(key)
+        elseif key == "buffAlign" then
+            alignSetting = userInterfaceSettings:get(key)
+        end
     else
         print('All values are changed')
     end
@@ -164,20 +173,32 @@ local dummyLayout = ui.content {
 }
 
 
+local function getAlignment()
+    if alignSetting then
+        return ui.ALIGNMENT.Start
+    else 
+        return ui.ALIGNMENT.End
+    end
+end
+
 --[[ local tableOfLayouts = com.createBuffsContent('pad')
 local flexContent = com.ui.createFlex(tableOfLayouts)
 local buffBoxElement = com.ui.createElementContainer(flexContent)
  ]]
-local newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',iconSize)
+
+--local newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',iconSize)
+
 --traverseTable(newRootLayouts)
 
-local newFlexRow = com.ui.createFlex(newRootLayouts)
+--[[ local newFlexRow = com.ui.createFlex(newRootLayouts)
 newFlexRow.props.size = v2(40*15,40*4)
 local newBuffBoxElement = com.ui.createElementContainer(newFlexRow)
-newBuffBoxElement.layout.props.relativePosition = v2(0.5,0.1)
+newBuffBoxElement.layout.props.relativePosition = v2(0.5,0.1) ]]
 
+
+--Consider putting these all inside an init that's called when the script 1st runs. 
 local newRootLayouts2, wrapFxIcons, fxData = com.createRootFlexLayouts('pad',iconSize, com.fltBuffTimers)
-local rowsOfIcons = com.flexWrapper(newRootLayouts2,{iconsPerRow = 4})
+local rowsOfIcons = com.flexWrapper(newRootLayouts2,{iconsPerRow = 4, Alignment = getAlignment()})
 --[[ for i, v in ipairs(rowsOfIcons) do
     print(rowsOfIcons[i].name, v)
   
@@ -195,8 +216,8 @@ end ]]
 local flexWrap = com.ui.createFlex(rowsOfIcons,false)
 print(com.calculateRootFlexSize(rowsOfIcons))
 --removed or v2(40*12,60*6) from below
-flexWrap.props.size = com.calculateRootFlexSize(rowsOfIcons)
-flexWrap.props.arrange = ui.ALIGNMENT.Center
+flexWrap.props.size = com.calculateRootFlexSize(rowsOfIcons) -- Generate a table of horizontal flex rows 
+flexWrap.props.arrange = ui.ALIGNMENT.Center --Create the vertical flex that holds every horz flex row
 --flexWrap.props.horizontal = false
 print(flexWrap.props.arrange)
 local flexWrapElement = com.ui.createElementContainer(flexWrap)
@@ -236,14 +257,65 @@ flexWrapElement.layout.events = {
 
 local buffElement = {}
 
+--Funtion whether to display box around icons. 
+local function getBoxSetting()
+    if not showBox then
+        flexWrapElement.layout.props.alpha = 0
+    else 
+        flexWrapElement.layout.props.alpha = 0.2
+    end
+end
+
+getBoxSetting()
+local testRadial = false
+
+
+local test4Radial
+local radialText
+local radial
+if testRadial then
+-- +++++++++++Testing of the Radial Swipe.
+    test4Radial = com.createFxTable(Actor.activeSpells(self))
+    radialText = shader.radialWipe(test4Radial[#test4Radial])
+    radial = nil
+    local function doStuff()
+    radial = ui.create {
+        layer = 'HUD',
+        type = ui.TYPE.Image,
+        props = {
+        resource = radialText,
+        size = util.vector2(iconSize, iconSize),
+        alpha = 1,
+        position = util.vector2(0,0),
+        relativePosition = v2(0.5,0.5),
+        anchor = v2(0.5,0.5)
+        },
+    }
+    end
+    doStuff()
+    alpha = 0.4
+end
+
+-- Function that updates the entire buff box element
 local function updateUI_Element()
     com.destroyTooltip(true)
-    local testingLayout = ui.content{com.createBuffsContent('pad')}
-    getContentKeys(testingLayout[1], false)
+    getBoxSetting()
+
+    if testRadial then
+        test4Radial = com.createFxTable(Actor.activeSpells(self))
+        radialText = shader.radialWipe(test4Radial[#test4Radial])
+        radial.layout.props.resource = radialText
+        radial:update()
+    end
+
+
+    --local testingLayout = ui.content{com.createBuffsContent('pad')}
+    --getContentKeys(testingLayout[1], false)
+
     --print(com.calculateRootFlexSize(newRootLayouts[1].content))
-    newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',iconSize)
-    newFlexRow = com.ui.createFlex(newRootLayouts)
-    newFlexRow.props.size = v2(40*15,40*4)
+    --newRootLayouts, fx_icons = com.createRootFlexLayouts('pad',iconSize)
+    --newFlexRow = com.ui.createFlex(newRootLayouts)
+    --newFlexRow.props.size = v2(40*15,40*4)
     --if not next(buffBoxElement) then return end --Doesn't work with userData
     --tableOfLayouts = com.createBuffsContent('pad')
     --flexContent = com.ui.createFlex(tableOfLayouts)
@@ -251,12 +323,13 @@ local function updateUI_Element()
     --print(currLayout.content)
     --currLayout.content = ui.content{flexContent}
     
-    local currNewBuff = newBuffBoxElement.layout
-    currNewBuff.content = ui.content{newFlexRow}
+    --local currNewBuff = newBuffBoxElement.layout
+    --currNewBuff.content = ui.content{newFlexRow}
 
+    --Consider putting all in an updateFunc
     newRootLayouts2, wrapFxIcons = com.createRootFlexLayouts('pad',iconSize, com.fltBuffTimers)
-    rowsOfIcons = com.flexWrapper(newRootLayouts2,{iconsPerRow = 4})
-    flexWrap = com.ui.createFlex(rowsOfIcons,false)
+    rowsOfIcons = com.flexWrapper(newRootLayouts2,{iconsPerRow = 4, Alignment = getAlignment()}) -- Generate a table of horizontal flex rows 
+    flexWrap = com.ui.createFlex(rowsOfIcons,false) --Create the vertical flex that holds every horz flex row
     flexWrap.props.size = com.calculateRootFlexSize(rowsOfIcons)
     flexWrap.props.arrange = ui.ALIGNMENT.Center
     local curflexWrapElement = flexWrapElement.layout
@@ -264,7 +337,7 @@ local function updateUI_Element()
 
     updateAlpha()
 
-    for i,layout in ipairs(newRootLayouts) do
+--[[     for i,layout in ipairs(newRootLayouts) do
         --print(newRootLayouts[i].userdata.DurationLeft)
         --print(layout.content[1].userdata.effectInfo.durationLeft)
         if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
@@ -276,7 +349,8 @@ local function updateUI_Element()
             --layout.content[1].props.alpha = alpha
             --print(layout.content[1].props.alpha and layout.content[1].props.alpha)
         end
-    end
+    end ]]
+
     for i,layout in ipairs(newRootLayouts2) do
         --print(newRootLayouts[i].userdata.DurationLeft)
         --print(layout.content[1].userdata.effectInfo.durationLeft)
@@ -285,7 +359,7 @@ local function updateUI_Element()
         end
     end
    
-    newBuffBoxElement:update()
+    --newBuffBoxElement:update()
     flexWrapElement:update()
     --buffBoxElement:update()
 end
@@ -328,6 +402,13 @@ local function onUpdate(dt)
 
 end
 
+local function onSave()
+end
+
+local function onLoad()
+
+end
+
 startUpdating()
 
 return {
@@ -335,5 +416,7 @@ return {
 		onKeyPress = onKeyPress,
 		onKeyRelease = onKeyRelease,
         onUpdate = onUpdate,
+        onSave = onSave,
+        onLoad = onLoad,
 	}
 }

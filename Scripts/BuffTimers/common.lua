@@ -7,6 +7,11 @@ local ui = require('openmw.ui')
 local util = require('openmw.util')
 local core = require("openmw.core")
 local I = require('openmw.interfaces')
+local storage = require("openmw.storage")
+local modInfo = require("Scripts.BuffTimers.modInfo")
+local shader = require('Scripts.BuffTimers.radialSwipe')
+local uiSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
+
 local templates = I.MWUI.templates
 local v2 = util.vector2
 local color = util.color
@@ -24,27 +29,12 @@ local TOOLTIP = nil
 local TOOLTIP_ID = nil
 local fxKey = {}
 
+
+
+
 local common = {
     const = {
       CHAR_ROTATE_SPEED = 0.3,
-      DEFAULT_ITEM_TYPES = {[types.Clothing] = true},
-      WINDOW_HEIGHT = math.min(640, yRes * 0.95), -- Occupy 800px preferably, or full vertical size
-      RIGHT_PANE_WIDTH = math.min(720, xRes * 0.30), -- Occupy 600px preferably, or 25% horizontal size
-      LEFT_PANE_WIDTH = math.min(140, xRes * 0.2), -- Occupy 200px preferably, or 20% horizontal size
-      TEXT_COLOR = util.color.rgb(255, 255, 255),
-      BACKGROUND_COLOR = util.color.rgb(0, 0, 0),
-      HIGHLIGHT_COLOR = util.color.rgba(44 / 255, 46 / 255, 45 / 255, 0.5),
-      IMAGE_SIZE = util.vector2(32, 32),
-      INVENTORY_IMAGE_SIZE = util.vector2(48, 48),
-      FONT_SIZE = 18,
-      HEADER_FONT_SIZE = 24,
-      HEADER_REL_SIZE = 0.1,
-      FOOTER_REL_SIZE = 0.05,
-      MAX_ITEMS = util.vector2(9, 9),
-      WIDGET_ORIGIN_PCT = 0.75, -- % of the distance from the top-left corner of the widget to the center of the screen
-      TOOLTIP_SEGMENT_HEIGHT = 85,
-      TOOLTIP_TYPE_TEXT_SIZE = util.vector2(120.0, 28),
-      TOOLTIP_PRIMARY_FIELDS_WIDTH = 120.0,
     },
     --need to store all debuff type effects
     debuffs = {
@@ -815,6 +805,7 @@ common.ui.rootFlex = function(content, args, id)
 					layout.userdata.lastMousePos = e.position
                 elseif layout.userdata.fx then
                     TOOLTIP = common.ui.toolTipBox(layout.userdata.fx, e.position) -- handle creating the tooltip if it does not exist
+                    -- need to handle offsetting tool tip if the user sets the buffs to align on end, need to set anchor(-1,0)
                 end
             end),
 			focusLoss = async:callback(function(layout)
@@ -1028,6 +1019,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 fx_text = common.ui.makeTextContent("",{tSize = iconSize and iconSize*0.28 or 9, size ={x= iconSize and iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}, id = ID})
             end
             fx_icon = common.ui.makeIconContent(fx.icon,{size = iconSize or 30})
+            fx_icon.content:add(shader.Overlay(shader.radialWipe(fx),iconSize))
             local timeArgs = {h = Amid, tSize = iconSize and iconSize*0.3+1 or 10, size ={x= iconSize and iconSize or 30,y=iconSize and iconSize*0.3+1 or 10}}
             fx_timeRemain =  common.ui.makeTextContent(timeText, timeArgs)
 
@@ -1124,7 +1116,8 @@ common.flexWrapper = function(content, args)
                 position = v2(0, 0),  -- Adjust vertical position dynamically
                 size = v2(containerWidth, rowHeight),  -- Set row width and height
                 horizontal = true,  -- Horizontal layout
-                anchor = v2(0, tonumber(rowIndex))  -- Offset the widget vertically
+                anchor = v2(0, tonumber(rowIndex)),  -- Offset the widget vertically
+                align = args and args.Alignment or Aleft
             },
             content = ui.content(row)  -- Add icons to the row
         }
@@ -1167,6 +1160,8 @@ common.ui.toolTipBox = function(fxData,position)
     displayText.props.wordWrap = false
     displayText.props.textSize = 16
     --print("Attempting to create UI element...")
+    local offset = uiSettings:get("buffAlign")
+    
 
     local tooltip = ui.create {
         layer = 'Notification',
@@ -1174,9 +1169,9 @@ common.ui.toolTipBox = function(fxData,position)
         name = 'effect_tooltip',
 		props = {
             relativePosition = v2(0, 0),
-			anchor = v2(0, 0),
+			anchor = not offset and v2(1,0) or v2(0, 0),
 			alpha = 1,
-			position = position or v2(0,0),
+			position = v2(0,0),
             --size = v2(500,500)
 		},
 		content = ui.content({
