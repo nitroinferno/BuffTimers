@@ -53,7 +53,7 @@ I.Settings.registerRenderer(
                             end),
                         },
                     }
-                })
+                }),
             }
             })
         }

@@ -5,7 +5,7 @@ Author: Nitro
 
 --]]
 
---plagiarise https://www.nexusmods.com/morrowind/mods/53717 for UI settings menu.
+-- Add user Setting for radial swipe direction and perhaps color
 
 local async = require("openmw.async")
 local core = require("openmw.core")

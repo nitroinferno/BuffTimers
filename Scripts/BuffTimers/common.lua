@@ -12,12 +12,12 @@ local modInfo = require("Scripts.BuffTimers.modInfo")
 local shader = require('Scripts.BuffTimers.radialSwipe')
 local uiSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
 local iconOptions = uiSettings:get("iconOptions")
-local timerColor = uiSettings:get("timerColor")
+local timerColor = uiSettings:get("timerColor") -- color returns in rgb
 local detailTextColor = uiSettings:get("detailTextColor")
 local iconPadding = uiSettings:get("iconPadding")
 local buffLimit = uiSettings:get("buffLimit")
 
---print("COLOR IS___________",detailTextColor)
+--print("COLOR IS___________",timerColor)
 
 local templates = I.MWUI.templates
 local v2 = util.vector2
@@ -36,7 +36,24 @@ local TOOLTIP = nil
 local TOOLTIP_ID = nil
 local fxKey = {}
 
-
+uiSettings:subscribe(async:callback(function(section, key)
+    if key then
+        print('Value is changed:', key, '=', uiSettings:get(key))
+        if key == "iconOptions" then
+            iconOptions = uiSettings:get(key)
+        elseif key == "timerColor" then
+            timerColor = uiSettings:get(key)
+        elseif key == "detailTextColor" then
+            detailTextColor = uiSettings:get(key)
+        elseif key == "iconPadding" then
+            iconPadding = uiSettings:get(key)
+        elseif key == "rowLimit" then
+            buffLimit = uiSettings:get(key)
+        elseif key == "buffLimit" then
+            buffLimit = uiSettings:get(key)
+        end
+    end
+end))
 
 
 local common = {
@@ -729,6 +746,7 @@ common.createFxTable = function(spellList)
 end
 
 -- New stuff 9-24-2024
+-- @param args.color openmw_util.color.rgba(r,b,g,a): 
 common.ui.makeTextContent = function(inputText, args)
     args = args or {}  -- Initialize args to an empty table if nil
     --local sz = (args and args.size) and args.size or 24
@@ -743,7 +761,7 @@ common.ui.makeTextContent = function(inputText, args)
 			textAlignV = args.v or Aright,
 			inheritAlpha = false,
 			--position = v2(40,10),
-			textColor = (args and args.colorIn) and color.hex(args.colorIn) or color.hex('FFFFFF'),
+			textColor = args and args.color or color.hex('FFFFFF'),
 			textSize = args.tSize or 10,
 			autoSize = args.aSize or false,
             multiline = true,   -- Enable multiline
@@ -1032,11 +1050,11 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 --print(fx_text.name,fx_text.props.textSize)
             else
                 --If it has no effect just assign it a space holder. 
-                fx_text = common.ui.makeTextContent("",{tSize = iconSize and iconSize*0.28 or 9, size ={x= iconSize and iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}, id = ID})
+                fx_text = common.ui.makeTextContent("",{tSize = iconSize*0.28 or 9, size ={x= iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}, id = ID})
             end
             fx_icon = common.ui.makeIconContent(fx.icon,{size = iconSize or 30})
             fx_icon.content:add(shader.Overlay(shader.radialWipe(fx),iconSize))
-            local timeArgs = {h = Amid, tSize = iconSize and iconSize*0.3+1 or 10, size ={x= iconSize and iconSize or 30,y=iconSize and iconSize*0.3+1 or 10}}
+            local timeArgs = {color = timerColor, h = Amid, tSize = iconSize*0.3+1 or 10, size ={x= iconSize or 30,y=iconSize and iconSize*0.3+1 or 10}}
             fx_timeRemain =  common.ui.makeTextContent(timeText, timeArgs)
 
             --Determine the rootFlexSize Props needed for children content

@@ -9,6 +9,8 @@ Author:Nitro
 --Need to figure out if I need to handle spell overwrites.
 --Consider creating update or init functions. 
 
+-- Need to figure out how to handle seperate buffs or not. perhaps wrap eveyrthing in an if statement. 
+
 
 local aux_util = require("openmw_aux.util")
 local core = require("openmw.core")
@@ -35,6 +37,8 @@ local playerSettings = storage.playerSection("SettingsPlayer" .. modInfo.name)
 local userInterfaceSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
 local controlsSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "Controls")
 local gameplaySettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "Gameplay")
+local uiPositions = storage.playerSection("UI_positions") --added late
+
 
 local Actor = types.Actor
 local Armor = types.Armor
@@ -158,6 +162,23 @@ local function updateAlpha()
     end
 end
 
+-- Function to calculate size based on iconSize without children content
+local function calculateDynamicSize(iconSize, pad)
+    local padding = pad and 6 or 0
+    
+    -- Use iconSize directly for width
+    local width = (iconSize+padding) or 30  -- Default to 30 if iconSize is nil
+  
+    -- Calculate total height using the logic from previous elements
+    local fx_textSize = iconSize and (iconSize * 0.3+1)*2 or 10
+    local fx_timeRemainSize = iconSize and iconSize * 0.3 + 1 or 10
+
+    -- Total height is the sum of the text size, icon size, and timer size
+    local totalHeight = fx_textSize + width + fx_timeRemainSize
+
+    return v2(width, totalHeight)  -- Return as a vector
+end
+
 local function getContentKeys(contentLayer, debugF)
     local contentNames = {}
     local printLog = debugF or false
@@ -249,8 +270,24 @@ local function updateFlexWrapProps(flexWrap, rowsOfIcons)
     end
 end
 
+local function grabIndexes(tbl, x)
+    local result = {}
+    -- Ensure x doesn't exceed the table size
+    local limit = math.min(x, #tbl)
+    
+    -- Loop through the first x elements and insert them into result
+    for i = 1, limit do
+        result[i] = tbl[i]
+    end
+    
+    return result
+end
+
+
 -- Initialize Buff and Debuff Layouts
-local rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts('pad', iconSize, com.fltDebuffTimers)
+local rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
+rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
+wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
 local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
 local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
 updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
@@ -258,7 +295,9 @@ local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
 debuff_FlexWrapElement.layout.props.relativePosition = v2(0,0.25)
 setupMouseEvents(debuff_FlexWrapElement)
 
-local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts('pad', iconSize, com.fltBuffTimers)
+local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
+rootLayoutDebuffs = grabIndexes(rootLayoutBuffs,buffLimit)
+wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
 local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
 local buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
 updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
@@ -287,13 +326,17 @@ local function updateUI_Element()
 	getBoxSetting()
 
     -- Update debuffs
-    rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts('pad', iconSize, com.fltDebuffTimers)
+    rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
+    rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
+    wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
     rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
     debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
     updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
 
     -- Update buffs
-    rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts('pad', iconSize, com.fltBuffTimers)
+    rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
+    rootLayoutBuffs = grabIndexes(rootLayoutBuffs,buffLimit)
+    wrapFxIconsBuffs = grabIndexes(wrapFxIconsBuffs,buffLimit)
     rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
     buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
     updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
@@ -303,13 +346,15 @@ local function updateUI_Element()
     local curBuff_FlexWrapElement = Buff_FlexWrapElement.layout    -- Buffs layout (may need a separate flexWrapElement)
 
     -- Update debuff content
+    local actualIconSz = calculateDynamicSize(iconSize,iconPadding)
+    local buffBoxSize = v2(actualIconSz.x*rowLimit, actualIconSz.y*(util.round(buffLimit/rowLimit)))
     curDebuff_FlexWrapElement.content = ui.content{
-        debuff_FlexWrap or showBox and {props = {size = v2(iconSize*rowLimit, iconSize*util.round(buffLimit/rowLimit))}} or {}
+        debuff_FlexWrap or showBox and {props = {size = buffBoxSize}} or {}
     }
-
+    
     -- Update buff content
     curBuff_FlexWrapElement.content = ui.content{
-        buff_FlexWrap or showBox and {props = {size = v2(iconSize*rowLimit, iconSize*util.round(buffLimit/rowLimit))}} or {}
+        buff_FlexWrap or showBox and {props = {size = buffBoxSize}} or {}
     }
 
     -- Update the alpha value (flashing effect)
@@ -352,8 +397,9 @@ local function stopUpdating()
 end
 
 local function onKeyPress(key)
-	local tempKeyBind = input.KEY.G
-	if (not playerSettings:get("modEnable")) or (key.code ~= tempKeyBind) or core.isWorldPaused()  then return end
+	local tempKeyBind = input.KEY.G -- Perhaps use this key to toggle the UI on/off
+
+--[[ 	if (not playerSettings:get("modEnable")) or (key.code ~= tempKeyBind) or core.isWorldPaused()  then return end
 	if tempKeyBind == input.KEY.G then
 		if buffElement then
 			buffElement:destroy()
@@ -363,7 +409,25 @@ local function onKeyPress(key)
 			--buffElement = ui.create(newFlexRow)
 			startUpdating()
 		end
-	end
+	end ]]
+
+    local SavePositions = input.KEY.Equals
+    local resetPositions = input.KEY.minus
+    if (not playerSettings:get("modEnable")) or (key.code ~= SavePositions) and (key.code ~= resetPositions)  or core.isWorldPaused()  then return end
+
+    local buffPos = Buff_FlexWrapElement.layout.props.position
+    local debuffPos = debuff_FlexWrapElement.layout.props.position
+
+    if key.code == SavePositions then
+        uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos})
+        print(uiPositions:get("BuffPositions").debuffPos)
+    end
+
+    if key.code == resetPositions then
+        uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,iconSize*2)})
+        print(uiPositions:get("BuffPositions").debuffPos)
+    end
+
 end
 
 local function onKeyRelease(key)
