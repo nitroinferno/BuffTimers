@@ -49,3 +49,7 @@
 
 # ignore jsons 
 *.json
+
+# ignore zips
+*.7z
+
