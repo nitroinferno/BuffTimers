@@ -59,3 +59,51 @@ I.Settings.registerRenderer(
         }
     end
 )
+
+I.Settings.registerRenderer(
+    'myToggle',
+    function(value, set, arg)
+        -- Determine the initial state
+        local selectedOption = value or "Unshade"  -- Default to "Shade"
+
+        -- Function to toggle between "Shade" and "Unshade"
+        local function toggle()
+            if selectedOption == "Shade" then
+                selectedOption = "Unshade"
+            else
+                selectedOption = "Shade"
+            end
+            set(selectedOption)  -- Update the setting value
+        end
+
+        -- Return the renderer with toggleable text
+        return {
+            template = I.MWUI.templates.box,  -- Use the provided template for box styling
+            content = ui.content({
+                {
+                    template = I.MWUI.templates.padding,
+                    content = ui.content({
+                        {
+                            type = ui.TYPE.Text,  -- Use text type for clickable option
+                            props = {
+                                text = selectedOption,  -- Display current state
+                                textColor = util.color.rgb(202 / 255, 165 / 255, 96 / 255),  -- Custom text color
+                                textSize = 15,  -- Text size
+                                textAlignH = ui.ALIGNMENT.Center,  -- Center align the text horizontally
+                                textAlignV = ui.ALIGNMENT.Center,
+                                size = v2(60,20),
+                                autoSize = false
+                            },
+                            events = {
+                                mousePress = async:callback(function(e)
+                                    if e.button ~= 1 then return end
+                                    toggle()  -- Toggle the option when clicked
+                                end),
+                            },
+                        },
+                    })
+                },
+            })
+        }
+    end
+)

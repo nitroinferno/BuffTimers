@@ -3,11 +3,16 @@ local ui = require('openmw.ui')
 local vector2 = require('openmw.util').vector2
 local util = require('openmw.util')
 local shader = {}
+local modInfo = require("Scripts.BuffTimers.modInfo")
+local storage = require("openmw.storage")
+local userInterfaceSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
+local swipeOpt = userInterfaceSettings:get("radialSwipe")
+
 
 shader.radialWipe = function(fx)
     if not fx then return end
     if not fx.duration or fx.durationLeft <= 0 then return end
-    local myAtlas = 'textures/radial/partial.png' -- a 4096x4096 atlas
+    local myAtlas = (swipeOpt == "Unshade") and 'textures/radial/partial.png' or 'textures/radial/partial_invert.png' -- a 4096x4096 atlas
     local offset = 204 -- each square is 204 x 204
     local durL = fx.durationLeft
     local dur = fx.duration

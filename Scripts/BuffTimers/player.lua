@@ -39,22 +39,15 @@ local controlsSettings = storage.playerSection("SettingsPlayer" .. modInfo.name 
 local gameplaySettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "Gameplay")
 local uiPositions = storage.playerSection("UI_positions") --added late
 
+local xRes = ui.screenSize().x
+local yRes = ui.screenSize().y
 
-local Actor = types.Actor
-local Armor = types.Armor
-local Item = types.Item
-local Weapon = types.Weapon
-local Clothing = types.Clothing
-local Book = types.Book
-local SLOT_CARRIED_RIGHT = Actor.EQUIPMENT_SLOT.CarriedRight
-local weaponHotKeyPressed = false
-local spellHotKeyPressed = false
 local debug = true
 local timer = nil
 local showMessages = userInterfaceSettings:get("showMessages")
 local iconSize = userInterfaceSettings:get("iconScaling")
 local showBox = userInterfaceSettings:get("showBox")
-local alignSetting = userInterfaceSettings:get("buffAlign")
+local buffAlign = userInterfaceSettings:get("buffAlign")
 local debuffAlign = userInterfaceSettings:get("debuffAlign")
 local splitBuffsDebuffs = userInterfaceSettings:get("splitBuffsDebuffs")
 local iconOptions = userInterfaceSettings:get("iconOptions")
@@ -75,7 +68,7 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
         elseif key == "showBox" then
             showBox = userInterfaceSettings:get(key)
         elseif key == "buffAlign" then
-            alignSetting = userInterfaceSettings:get(key)
+            buffAlign = userInterfaceSettings:get(key)
         elseif key == "debuffAlign" then
             debuffAlign = userInterfaceSettings:get(key)
         elseif key == "splitBuffsDebuffs" then
@@ -97,7 +90,6 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
         print('All values are changed')
     end
 end))
-
 
 local function traverseTable(tbl, indent)
     indent = indent or 0
@@ -221,12 +213,8 @@ local dummyLayout = ui.content {
 }
 
 
-local function getAlignment()
-    if alignSetting then
-        return ui.ALIGNMENT.Start
-    else 
-        return ui.ALIGNMENT.End
-    end
+local function getAlignment(alignment)
+    return alignment and ui.ALIGNMENT.Start or ui.ALIGNMENT.End
 end
 
 local function nilCheck(tbl, ...)
@@ -288,21 +276,21 @@ end
 local rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
 rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
 wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
-local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
+local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
 local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
 updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
 local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
-debuff_FlexWrapElement.layout.props.relativePosition = v2(0,0.25)
+debuff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").debuffPos or v2(0,2*iconSize)
 setupMouseEvents(debuff_FlexWrapElement)
 
 local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
 rootLayoutDebuffs = grabIndexes(rootLayoutBuffs,buffLimit)
 wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
-local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
+local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
 local buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
 updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
 local Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
-Buff_FlexWrapElement.layout.props.relativePosition = v2(0,0)
+Buff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").buffPos or v2(0,0)
 setupMouseEvents(Buff_FlexWrapElement)
 
 --Funtion whether to display box around icons. 
@@ -329,7 +317,7 @@ local function updateUI_Element()
     rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
     rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
     wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
-    rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
+    rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
     debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
     updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
 
@@ -337,7 +325,7 @@ local function updateUI_Element()
     rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
     rootLayoutBuffs = grabIndexes(rootLayoutBuffs,buffLimit)
     wrapFxIconsBuffs = grabIndexes(wrapFxIconsBuffs,buffLimit)
-    rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment() })
+    rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
     buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
     updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
 
@@ -412,7 +400,7 @@ local function onKeyPress(key)
 	end ]]
 
     local SavePositions = input.KEY.Equals
-    local resetPositions = input.KEY.minus
+    local resetPositions = input.KEY.Minus
     if (not playerSettings:get("modEnable")) or (key.code ~= SavePositions) and (key.code ~= resetPositions)  or core.isWorldPaused()  then return end
 
     local buffPos = Buff_FlexWrapElement.layout.props.position
@@ -421,10 +409,14 @@ local function onKeyPress(key)
     if key.code == SavePositions then
         uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos})
         print(uiPositions:get("BuffPositions").debuffPos)
+
     end
 
     if key.code == resetPositions then
-        uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,iconSize*2)})
+        uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,iconSize*2)}) --Consider getting relative position
+        if debuff_FlexWrapElement then debuff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").debuffPos; debuff_FlexWrapElement:update() end
+        if Buff_FlexWrapElement then Buff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").buffPos; Buff_FlexWrapElement:update() end
+        --print(xRes)
         print(uiPositions:get("BuffPositions").debuffPos)
     end
 

@@ -102,31 +102,6 @@ end
 local magicIcon = nil
 --magicIcon = getTexture(item.icon)
 
---inside Scripts\ControllerInterface\ci_customwindow.lua   renderListItem
-local function box()
-	local template = I.MWUI.templates.padding
-		template = I.MWUI.templates.box
-	local box = {
-		type = ui.TYPE.Container,
-		props = {
-			size = util.vector2(getIconSize(), getIconSizeGrow() * sizeX),
-			autoSize = false
-		},
-		content = ui.content {
-			{
-				template = template,
-				props = {
-					size = util.vector2(getIconSize(), getIconSizeGrow() * sizeX),
-					autoSize = false
-				},
-				--  content = {}
-				content = ui.content(flexedItems3(contentLeft,contentCenter,contentRight, true, util.vector2(sizeX, getIconSize())))
-				--content = content
-			}
-		}
-	}
-	return box
-end
 
 local function textContent(inputText, size)
     return {

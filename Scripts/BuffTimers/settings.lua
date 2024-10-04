@@ -18,7 +18,8 @@ local util = require('openmw.util')
 
 local modInfo = require("Scripts.BuffTimers.modInfo")
 
-local pageDescription = "By Nitro\nv" .. modInfo.version .. "\n\nBuff Timers"
+local pageDescription = "By Nitro\nv" .. modInfo.version .. "\n\nBuff Timers\n\nThis mod shows all buffs or debuffs with timers and optional dynamic visual effects."
+.."\n\nYou can click and drag both buff or debuff windows to any location on the HUD.\n\nFor Buff/Debuff HUD Positions:\n    Press '=' key to Save\n    Press '-' key to Reset"
 local modEnableDescription = "This enables the mod or disables it."
 local showMessagesDescription = "Enables UI messages to be shown for any cases which require it. (Currently none)"
 local iconOptions = "Select which options you want for the icons the following options are available: \n 1. All (contains all below)\n 2. Icon Pulse on low time\n 3. Radial Swipe"
@@ -68,7 +69,7 @@ I.Settings.registerGroup {
 	permanentStorage = false,
 	settings = {
 		setting("showMessages", "checkbox", {}, "Show Messages", showMessagesDescription, true),
-		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 24, min/max is: 1/100", 35),
+		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 35, min/max is: 1/100", 35),
 		setting("showBox","checkbox",{}, "Show Buff Borders", "Show the area box where buff icons will be rendered. Useful for positioning the buffs display area",true),
 		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("debuffAlign","checkbox",{}, "Align deBuffs Left", "deBuffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
@@ -79,7 +80,7 @@ I.Settings.registerGroup {
 		setting("iconPadding","checkbox",{}, "Pad Icons", "Put Padding around the buff Icons", true),
 		setting("rowLimit","inputText",{defaultValue = 15}, "Max number of debuffs or buffs per row", "Set the limit on how many buffs or debuffs to show per row. Default is 15, min/max is: 1/100", 15),
 		setting("buffLimit","inputText",{defaultValue = 100}, "Max number of debuffs or buffs to display", "Set the limit on how many buffs or debuffs can be shown. Default is 100, min/max is: 1/100", 100),
-		
+		setting("radialSwipe","myToggle",{}, "Radial Swipe Options", "Radial swipe effect as time decreases: Shade / Unshade\nRequires Reload to take effect.", "Unshade"),
 	}
 }
 
