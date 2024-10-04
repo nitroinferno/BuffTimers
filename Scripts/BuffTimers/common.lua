@@ -735,7 +735,8 @@ common.createFxTable = function(spellList)
             magnitudeThisFrame = effect.magnitudeThisFrame,
             affectedSkill = effect.affectedSkill,
             affectedAttribute = effect.affectedAttribute,
-            icon = magRecs[effect.id].icon
+            icon = magRecs[effect.id].icon,
+            parentSpellName = spells.name
           }
           local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
           fxKey[uniqueKey] = true -- Add the unique Effecet as a key to the fxKey table
@@ -1187,10 +1188,18 @@ common.ui.toolTipBox = function(fxData,position)
     if not fxData then return end
     local fx = fxData
     TOOLTIP_ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id -- Update the tracked tooltip unique id
-    local inputText = fx.id ..'\n'..fx.name.." "
+    local inputText = fx.parentSpellName ..'\n'..fx.name.." "
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
-    inputText = fx.magnitudeThisFrame and inputText..":"..util.round(fx.magnitudeThisFrame).." "
-    inputText = fx.durationLeft and inputText.."Duration: "..common.formatDuration(fx.durationLeft)
+
+    -- Check for fx.magnitudeThisFrame and concatenate
+    if fx.magnitudeThisFrame then
+        inputText = inputText .. ":" .. tostring(util.round(fx.magnitudeThisFrame)) .. " "
+    end
+
+    -- Check for fx.durationLeft and concatenate
+    if fx.durationLeft then
+        inputText = inputText .. "Duration: " .. tostring(common.formatDuration(fx.durationLeft))
+    end
     local displayText = common.ui.makeTextContent(inputText)
     displayText.props.textColor = color.rgb(202 / 255, 165 / 255, 96 / 255)
     displayText.props.autoSize = true
