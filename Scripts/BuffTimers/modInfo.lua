@@ -1,11 +1,11 @@
 --[[
 
-Mod: Scroll HotKey
+Mod: BuffTimers
 Author: Nitro
 
 --]]
 
 return {
 	name = "BuffTimers",
-	version = "0.1.0"
+	version = "0.0.9"
 }
