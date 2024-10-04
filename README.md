@@ -3,8 +3,6 @@ Lua scripts that puts buff and debuffs onto the screen.
 
 ![Buffs With Timers](/photos/screencap1.png?raw=true)
 ## DESCRIPTION
-
-This mod will allows you to cycle through weapons and spells by means of a MouseWheel scroll + user defined keybinds for weapons and spells.
 There are 2 separate icon windows one for buffs and one for debuffs that can be user configured to limit the total buffs, how many buffs per row, size, and font colors. 
 Each buff can be repositioned to anywhere on the HUD by just clicking and dragging the window box. Set the display box setting to 'Yes' to see the buff box space, while you have no buffs or debuffs present
 
