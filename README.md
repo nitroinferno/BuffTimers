@@ -1,7 +1,7 @@
 # OpenMW BUFF ICONS & TIMERS
 Lua scripts that puts buff and debuffs onto the screen. 
 
-
+![Buffs With Timers](/photos/screencap1.png?raw=true)
 ## DESCRIPTION
 
 This mod will allows you to cycle through weapons and spells by means of a MouseWheel scroll + user defined keybinds for weapons and spells.
