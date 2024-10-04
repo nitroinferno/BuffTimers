@@ -15,4 +15,4 @@ The buff icons have tooltip mouseover support as well.
 
 1. Download and extract the contents to your desired folder. (e.g. C:/users/games/OpenMW/mods/)
 
-2. Enable the mod in your OpenMW launcher or alternatively add content=MouseWheel-KeyBinding.omwscripts to content= section and file path to data= inside your OpenMW.cfg file. (e.g. data="C:/users/games/OpenMW/Mods/Mousewheel-Control-KeyBinding")
+2. Enable the mod in your OpenMW launcher or alternatively add content=BuffTimers.omwscripts to content= section and file path to data= inside your OpenMW.cfg file. (e.g. data="C:/users/games/OpenMW/Mods/BuffTimers")
