@@ -280,7 +280,11 @@ local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = row
 local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
 updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
 local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
-debuff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").debuffPos or v2(0,2*iconSize)
+-- Handle nil on initialization
+local debuffPosition = uiPositions:get("BuffPositions")
+debuffPosition = debuffPosition and debuffPosition.debuffPos or v2(0, 2 * iconSize)
+
+debuff_FlexWrapElement.layout.props.position = debuffPosition
 setupMouseEvents(debuff_FlexWrapElement)
 
 local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
@@ -290,7 +294,11 @@ local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimi
 local buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
 updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
 local Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
-Buff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").buffPos or v2(0,0)
+
+-- Handle nil on initialization
+local buffPosition = uiPositions:get("BuffPositions")
+buffPosition = buffPosition and buffPosition.buffPos or v2(0, 2 * iconSize)
+Buff_FlexWrapElement.layout.props.position = buffPosition
 setupMouseEvents(Buff_FlexWrapElement)
 
 --Funtion whether to display box around icons. 
