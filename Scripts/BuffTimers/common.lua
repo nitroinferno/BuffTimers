@@ -16,7 +16,7 @@ local timerColor = uiSettings:get("timerColor") -- color returns in rgb
 local detailTextColor = uiSettings:get("detailTextColor")
 local iconPadding = uiSettings:get("iconPadding")
 local buffLimit = uiSettings:get("buffLimit")
-local rowLimit = userInterfaceSettings:get("rowLimit")
+local rowLimit = uiSettings:get("rowLimit")
 
 --print("COLOR IS___________",timerColor)
 
