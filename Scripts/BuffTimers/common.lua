@@ -16,6 +16,7 @@ local timerColor = uiSettings:get("timerColor") -- color returns in rgb
 local detailTextColor = uiSettings:get("detailTextColor")
 local iconPadding = uiSettings:get("iconPadding")
 local buffLimit = uiSettings:get("buffLimit")
+local rowLimit = userInterfaceSettings:get("rowLimit")
 
 --print("COLOR IS___________",timerColor)
 
@@ -48,7 +49,7 @@ uiSettings:subscribe(async:callback(function(section, key)
         elseif key == "iconPadding" then
             iconPadding = uiSettings:get(key)
         elseif key == "rowLimit" then
-            buffLimit = uiSettings:get(key)
+            rowLimit = uiSettings:get(key)
         elseif key == "buffLimit" then
             buffLimit = uiSettings:get(key)
         elseif key == "buffAlign" then

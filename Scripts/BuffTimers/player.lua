@@ -89,7 +89,7 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
         elseif key == "iconPadding" then
             iconPadding = userInterfaceSettings:get(key)
         elseif key == "rowLimit" then
-            buffLimit = userInterfaceSettings:get(key)
+            rowLimit = userInterfaceSettings:get(key)
         elseif key == "buffLimit" then
             buffLimit = userInterfaceSettings:get(key)
         end
