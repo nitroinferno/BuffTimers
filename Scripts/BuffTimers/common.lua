@@ -627,7 +627,7 @@ common.ui.createElementContainer = function(inputContent, pos)
     -- Perhaps check if its length if table size is zero
     if not inputContent then inputContent = {} end -- Need to handle default state if input content is nil.
     local element = ui.create {
-		layer = 'Windows',
+		layer = 'Effects_Layer', -- changed to custom layer
 		template = I.MWUI.templates.boxTransparent,
         name = 'MainBuffBoundary',
 		props = {
