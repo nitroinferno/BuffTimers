@@ -57,8 +57,12 @@ local iconPadding = userInterfaceSettings:get("iconPadding")
 local rowLimit = userInterfaceSettings:get("rowLimit")
 local buffLimit = userInterfaceSettings:get("buffLimit")
 
-ui.layers.insertAfter('HUD', 'Effects_Layer', { interactive = true })
-
+local function initLayer()
+    if ui.layers[5] then return end -- Check if this layer already exists. 
+    print("Creating Layer.. Effects Layer")
+    ui.layers.insertAfter('HUD', 'Effects_Layer', { interactive = true })
+end
+initLayer()
 
 -- Set the scale of the icons by checking for changes in the UI settings. 
 userInterfaceSettings:subscribe(async:callback(function(section, key)

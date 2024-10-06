@@ -51,10 +51,32 @@ uiSettings:subscribe(async:callback(function(section, key)
             buffLimit = uiSettings:get(key)
         elseif key == "buffLimit" then
             buffLimit = uiSettings:get(key)
+        elseif key == "buffAlign" then
+            uiSettings:get(key)
+        elseif key == "debuffAlign" then
+            uiSettings:get(key)
         end
     end
 end))
 
+local function setTooltipOffset(position)
+    local toolTipOffsetX
+    local toolTipOffsetY
+    print()
+    if (position.x/ui.layers[5].size.x) >= 0.5 then -- Indiactes mouse is on left hand side
+        toolTipOffsetX = 1
+    else
+        toolTipOffsetX = 0
+    end
+
+    if (position.y/ui.layers[5].size.y) > 0.90 then
+        toolTipOffsetY = 1
+    else
+        toolTipOffsetY = -0.4
+    end
+    -- print(v2(toolTipOffsetX,toolTipOffsetY)) -- for Debugging
+	return v2(toolTipOffsetX,toolTipOffsetY)
+end
 
 local common = {
     const = {
@@ -472,11 +494,13 @@ common.ui.rootFlex = function(content, args, id)
                 --print(layout.userdata.fx)
                 if TOOLTIP then -- handle updating the tooltip. 
                     TOOLTIP.layout.props.position = e.position
+                    TOOLTIP.layout.props.anchor = setTooltipOffset(e.position)
 					TOOLTIP:update()
 					layout.userdata.lastMousePos = e.position
                 elseif layout.userdata.fx then
                     TOOLTIP = common.ui.toolTipBox(layout.userdata.fx, e.position) -- handle creating the tooltip if it does not exist
                     -- need to handle offsetting tool tip if the user sets the buffs to align on end, need to set anchor(-1,0)
+
                 end
             end),
 			focusLoss = async:callback(function(layout)
@@ -851,7 +875,24 @@ common.ui.toolTipBox = function(fxData,position)
     displayText.props.textSize = 16
     --print("Attempting to create UI element...")
     local offset = uiSettings:get("buffAlign")
-    
+    --print(ui.showMessage(tostring(util.round(position.x))))
+
+    --Handle how to position the tool Tip based on where icon is
+--[[     local toolTipOffsetX
+    local toolTipOffsetY
+
+    if (position.x/ui.layers[5].size.x) >= 0.5 then -- Indiactes mouse is on left hand side
+        toolTipOffsetX = 1
+    else
+        toolTipOffsetX = 0
+    end
+
+    if (position.y/ui.layers[5].size.y) > 0.95 then
+        toolTipOffsetY = 1
+    else
+        toolTipOffsetY = -0.4
+    end ]]
+    local offSet = setTooltipOffset(position)
 
     local tooltip = ui.create {
         layer = 'Notification',
@@ -859,7 +900,7 @@ common.ui.toolTipBox = function(fxData,position)
         name = 'effect_tooltip',
 		props = {
             relativePosition = v2(0, 0),
-			anchor = not offset and v2(1,0) or v2(0, 0),
+			anchor = offSet or v2(0, 0),
 			alpha = 1,
 			position = v2(0,0),
             --size = v2(500,500)
