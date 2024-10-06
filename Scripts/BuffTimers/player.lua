@@ -39,7 +39,6 @@ local controlsSettings = storage.playerSection("SettingsPlayer" .. modInfo.name 
 local gameplaySettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "Gameplay")
 local uiPositions = storage.playerSection("UI_positions") --added late
 
-
 local xRes = ui.screenSize().x
 local yRes = ui.screenSize().y
 
@@ -57,6 +56,9 @@ local detailTextColor = userInterfaceSettings:get("detailTextColor")
 local iconPadding = userInterfaceSettings:get("iconPadding")
 local rowLimit = userInterfaceSettings:get("rowLimit")
 local buffLimit = userInterfaceSettings:get("buffLimit")
+
+ui.layers.insertAfter('HUD', 'Effects_Layer', { interactive = true })
+
 
 -- Set the scale of the icons by checking for changes in the UI settings. 
 userInterfaceSettings:subscribe(async:callback(function(section, key)
@@ -92,7 +94,12 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
     end
 end))
 
-uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,iconSize*2)}) -- Imitialize the BuffPosition defaults
+local buffPositions = uiPositions:get("BuffPositions")
+
+-- Initialize if it's nil
+if not buffPositions then
+    uiPositions:set("BuffPositions", {buffPos = v2(0, 0), debuffPos = v2(0, iconSize * 2)})
+end
 
 local function traverseTable(tbl, indent)
     indent = indent or 0
@@ -283,9 +290,9 @@ local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = row
 local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
 updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
 local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
+
 -- Handle nil on initialization
-local debuffPosition = uiPositions:get("BuffPositions")
-debuffPosition = debuffPosition and debuffPosition.debuffPos or v2(0, 2 * iconSize)
+local debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 2 * iconSize)
 
 debuff_FlexWrapElement.layout.props.position = debuffPosition
 setupMouseEvents(debuff_FlexWrapElement)
@@ -299,8 +306,8 @@ updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
 local Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
 
 -- Handle nil on initialization
-local buffPosition = uiPositions:get("BuffPositions")
-buffPosition = buffPosition and buffPosition.buffPos or v2(0, 2 * iconSize)
+local buffPosition = buffPositions and buffPositions.buffPos or v2(0, 2 * iconSize)
+
 Buff_FlexWrapElement.layout.props.position = buffPosition
 setupMouseEvents(Buff_FlexWrapElement)
 
