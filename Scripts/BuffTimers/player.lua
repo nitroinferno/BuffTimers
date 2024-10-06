@@ -39,6 +39,7 @@ local controlsSettings = storage.playerSection("SettingsPlayer" .. modInfo.name 
 local gameplaySettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "Gameplay")
 local uiPositions = storage.playerSection("UI_positions") --added late
 
+
 local xRes = ui.screenSize().x
 local yRes = ui.screenSize().y
 
@@ -90,6 +91,8 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
         print('All values are changed')
     end
 end))
+
+uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,iconSize*2)}) -- Imitialize the BuffPosition defaults
 
 local function traverseTable(tbl, indent)
     indent = indent or 0
