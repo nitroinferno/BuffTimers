@@ -58,7 +58,7 @@ local rowLimit = userInterfaceSettings:get("rowLimit")
 local buffLimit = userInterfaceSettings:get("buffLimit")
 
 local function initLayer()
-    if ui.layers[5] then return end -- Check if this layer already exists. 
+    if ui.layers[5].name == 'Effects_Layer' then return end -- Check if this layer already exists. 
     print("Creating Layer.. Effects Layer")
     ui.layers.insertAfter('HUD', 'Effects_Layer', { interactive = true })
 end
