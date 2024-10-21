@@ -53,3 +53,6 @@
 # ignore zips
 *.7z
 *.txt
+
+# Ignore layout changes
+*.layout
