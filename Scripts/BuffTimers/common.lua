@@ -63,7 +63,7 @@ end))
 local function setTooltipOffset(position)
     local toolTipOffsetX
     local toolTipOffsetY
-    print()
+    --print()
     if (position.x/ui.layers[5].size.x) >= 0.5 then -- Indiactes mouse is on left hand side
         toolTipOffsetX = 1
     else
@@ -943,6 +943,11 @@ common.destroyTooltip = function(checkExistence)
             TOOLTIP = nil  -- Reset the global TOOLTIP variable
             TOOLTIP_ID = nil
         end
+    end
+
+    if checkExistence == 'force' and TOOLTIP then
+        TOOLTIP:destroy()
+        TOOLTIP = nil
     end
 end
 

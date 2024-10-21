@@ -30,6 +30,7 @@ local color = util.color
 local com = require('Scripts.BuffTimers.common')
 local shader = require('Scripts.BuffTimers.radialSwipe')
 local auxUi = require('openmw_aux.ui')
+local wasPaused = false -- Track the previous pause state
 
 local modInfo = require("Scripts.BuffTimers.modInfo")
 
@@ -449,6 +450,21 @@ local function onKeyRelease(key)
 end
 
 local function onUpdate(dt)
+    -- If this function runs, the game is unpaused
+    if wasPaused then
+        --print("Game unpaused!")
+        com.destroyTooltip('force')
+        wasPaused = false -- Update the state
+    end
+end
+
+local function onFrame(dt)
+    if dt ~= 0 or wasPaused == true then return end --indicates not paused
+    wasPaused = true -- Set pause toggle
+
+    if wasPaused then
+        --print("Game paused!")
+    end
 
 end
 
@@ -468,5 +484,15 @@ return {
         onUpdate = onUpdate,
         onSave = onSave,
         onLoad = onLoad,
-	}
+        onFrame = onFrame,
+	},
+    eventHandlers = {
+        UiModeChanged = function(data)
+            --print('UiModeChanged from', data.oldMode , 'to', data.newMode, '('..tostring(data.arg)..')')
+            if not data.newMode then
+                print('Attempting to Destroy Tooltip...')
+                com.destroyTooltip('force')
+            end
+        end
+    },
 }
