@@ -6,7 +6,9 @@ Lua scripts that puts buff and debuffs onto the screen.
 There are 2 separate icon windows one for buffs and one for debuffs that can be user configured to limit the total buffs, how many buffs per row, size, and font colors. 
 Each buff can be repositioned to anywhere on the HUD by just clicking and dragging the window box. Set the display box setting to 'Yes' to see the buff box space, while you have no buffs or debuffs present
 
-The buff box positions can be saved by pressing the '=' key. If you need to reset their positions to the default press '-'.
+-The buff box positions can be saved by pressing the '=' key. If you need to reset their positions to the default press '-'.
+-Saving your game will also store your buff/debuff box positions now.
+-To show/hide the buff box borders press ';'. When borders are shown you can click and drag the buff/debuffs to any position you like.
 
 The buff icons have tooltip mouseover support as well. 
 
