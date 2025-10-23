@@ -286,35 +286,85 @@ local function grabIndexes(tbl, x)
     return result
 end
 
+--[[ Original CODE in case something breaks..
+-- -- Initialize Buff and Debuff Layouts
+-- local rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
+-- rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
+-- wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
+-- local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
+-- local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
+-- updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
+-- local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
 
--- Initialize Buff and Debuff Layouts
-local rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
-rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
-wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
-local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
-local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
-updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
-local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
+-- -- Handle nil on initialization
+-- local debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 2 * iconSize)
 
--- Handle nil on initialization
-local debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 2 * iconSize)
+-- debuff_FlexWrapElement.layout.props.position = debuffPosition
+-- setupMouseEvents(debuff_FlexWrapElement)
 
-debuff_FlexWrapElement.layout.props.position = debuffPosition
-setupMouseEvents(debuff_FlexWrapElement)
+-- local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
+-- rootLayoutDebuffs = grabIndexes(rootLayoutBuffs,buffLimit)
+-- wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
+-- local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
+-- local buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
+-- updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
+-- local Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
 
-local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
-rootLayoutDebuffs = grabIndexes(rootLayoutBuffs,buffLimit)
-wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
-local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
-local buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
-updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
-local Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
+-- -- Handle nil on initialization
+-- local buffPosition = buffPositions and buffPositions.buffPos or v2(0, 2 * iconSize)
 
--- Handle nil on initialization
-local buffPosition = buffPositions and buffPositions.buffPos or v2(0, 2 * iconSize)
+-- Buff_FlexWrapElement.layout.props.position = buffPosition
+-- setupMouseEvents(Buff_FlexWrapElement)
+-- Declare all locals first (so they persist across resets)
+--]]
+local rootLayoutDebuffs, wrapFxIconsDebuffs
+local rowsOfDebuffIcons, debuff_FlexWrap, debuff_FlexWrapElement
+local debuffPosition
 
-Buff_FlexWrapElement.layout.props.position = buffPosition
-setupMouseEvents(Buff_FlexWrapElement)
+local rootLayoutBuffs, wrapFxIconsBuffs
+local rowsOfBuffIcons, buff_FlexWrap, Buff_FlexWrapElement
+local buffPosition
+
+-- Initialization function
+local function initLayouts(callBack)
+    if debuff_FlexWrapElement then debuff_FlexWrapElement:destroy() end
+	if debuff_FlexWrapElement then Buff_FlexWrapElement:destroy() end
+    -- Initialize Buff and Debuff Layouts
+    rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
+    rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs, buffLimit)
+    wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs, buffLimit)
+
+    rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
+    debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
+    updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
+    debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
+
+    -- Handle nil on initialization
+    debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 2 * iconSize)
+    debuff_FlexWrapElement.layout.props.position = debuffPosition
+    setupMouseEvents(debuff_FlexWrapElement)
+
+    -- Initialize Buff Layouts
+    rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
+    rootLayoutBuffs = grabIndexes(rootLayoutBuffs, buffLimit)
+    wrapFxIconsBuffs = grabIndexes(wrapFxIconsBuffs, buffLimit)
+
+    rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
+    buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
+    updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
+    Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
+
+    -- Handle nil on initialization
+    buffPosition = buffPositions and buffPositions.buffPos or v2(0, 2 * iconSize)
+    Buff_FlexWrapElement.layout.props.position = buffPosition
+    setupMouseEvents(Buff_FlexWrapElement)
+    --print(tostring(Buff_FlexWrapElement.layout.props.alpha))
+    if callBack then callBack() end
+end
+
+-- Call once initially
+initLayouts()
+
 
 --Funtion whether to display box around icons. 
 local function getBoxSetting()
@@ -328,7 +378,6 @@ local function getBoxSetting()
 end
 
 getBoxSetting()
-
 
 -- Function that updates both Buffs and Debuffs in UI
 local function updateUI_Element()
@@ -362,7 +411,6 @@ local function updateUI_Element()
     curDebuff_FlexWrapElement.content = ui.content{
         debuff_FlexWrap or showBox and {props = {size = buffBoxSize}} or {}
     }
-    
     -- Update buff content
     curBuff_FlexWrapElement.content = ui.content{
         buff_FlexWrap or showBox and {props = {size = buffBoxSize}} or {}
@@ -394,8 +442,9 @@ local buffElement = {}
 
 
 local function startUpdating()
-    --timer = time.runRepeatedly(updateUI_Element, 5 * time.second, { type = time.GameTime }) --5 is a slow pulse, 2 is a quick pulse. Perhaps increase speed to 2, under 5s duration remaining. 
-    timer = time.runRepeatedly(updateUI_Element, 4 * time.second, { type = time.GameTime })
+    --timer = time.runRepeatedly(updateUI_Element, 5 * time.second, { type = time.GameTime }) --5 is a slow pulse, 2 is a quick pulse. Perhaps increase speed to 2, under 5s duration remaining.
+    --Gametime is 30x faster than real time so 1s in gametime is 1/30s in real time.
+    timer = time.runRepeatedly(updateUI_Element, 4/30 * time.second, { type = time.SimulationTime })
 end
 
 local function stopUpdating()
@@ -410,21 +459,10 @@ end
 local function onKeyPress(key)
 	local tempKeyBind = input.KEY.G -- Perhaps use this key to toggle the UI on/off
 
---[[ 	if (not playerSettings:get("modEnable")) or (key.code ~= tempKeyBind) or core.isWorldPaused()  then return end
-	if tempKeyBind == input.KEY.G then
-		if buffElement then
-			buffElement:destroy()
-			buffElement = nil
-			stopUpdating()
-		else
-			--buffElement = ui.create(newFlexRow)
-			startUpdating()
-		end
-	end ]]
-
     local SavePositions = input.KEY.Equals
     local resetPositions = input.KEY.Minus
-    if (not playerSettings:get("modEnable")) or (key.code ~= SavePositions) and (key.code ~= resetPositions)  or core.isWorldPaused()  then return end
+    local toggleBox = input.KEY.Semicolon
+    if (not playerSettings:get("modEnable")) or (key.code ~= SavePositions) and (key.code ~= resetPositions) and (key.code ~= toggleBox) or core.isWorldPaused()  then return end
 
     local buffPos = Buff_FlexWrapElement.layout.props.position
     local debuffPos = debuff_FlexWrapElement.layout.props.position
@@ -443,6 +481,9 @@ local function onKeyPress(key)
         print(uiPositions:get("BuffPositions").debuffPos)
     end
 
+    if key.code == toggleBox then
+        userInterfaceSettings:set("showBox", not showBox)
+    end
 end
 
 local function onKeyRelease(key)
@@ -456,6 +497,22 @@ local function onUpdate(dt)
         com.destroyTooltip('force')
         wasPaused = false -- Update the state
     end
+    if not I.UI.isHudVisible() and timer then
+        --print("Hiding the Buff timers for screenshots!")
+        stopUpdating()
+        local curDebuff_FlexWrapElement = debuff_FlexWrapElement and debuff_FlexWrapElement.layout  -- Debuffs layout
+        local curBuff_FlexWrapElement = debuff_FlexWrapElement and Buff_FlexWrapElement.layout    -- Buffs layout (may need a separate flexWrapElement)
+        --print("Destroying all buffTimers elements...")
+        com.destroyTooltip('force')
+        debuff_FlexWrapElement:destroy()
+	    Buff_FlexWrapElement:destroy()
+    elseif I.UI.isHudVisible() and not timer then
+        --If there is no timer, then stopupdating() has been called, reinitialize everything, startUpdating again. 
+        initLayouts(getBoxSetting)
+        startUpdating() -- Creates the timer function
+        --print("timer is not nil.. in the onUpdate function...")
+    end
+
 end
 
 local function onFrame(dt)
@@ -469,6 +526,9 @@ local function onFrame(dt)
 end
 
 local function onSave()
+    local buffPos = Buff_FlexWrapElement.layout.props.position
+    local debuffPos = debuff_FlexWrapElement.layout.props.position
+    uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos})
 end
 
 local function onLoad()
