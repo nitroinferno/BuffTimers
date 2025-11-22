@@ -857,7 +857,10 @@ common.ui.toolTipBox = function(fxData,position)
     if not fxData then return end
     local fx = fxData
     TOOLTIP_ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id -- Update the tracked tooltip unique id
-    local inputText = fx.parentSpellName ..'\n'..fx.name.." "
+    local inputText = fx.parentSpellName ..'\n'
+    if fx.name then
+       inputText = inputText..fx.name..' '
+    end
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
 
     -- Check for fx.magnitudeThisFrame and concatenate
