@@ -17,6 +17,7 @@ local detailTextColor = uiSettings:get("detailTextColor")
 local iconPadding = uiSettings:get("iconPadding")
 local buffLimit = uiSettings:get("buffLimit")
 local rowLimit = uiSettings:get("rowLimit")
+local showMagnitude = uiSettings:get("showMagnitude")
 
 --print("COLOR IS___________",timerColor)
 
@@ -703,7 +704,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             local fx_text
             local fx_icon
             local fx_timeRemain
-            local inText = common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
+            local inText = showMagnitude and common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
             if inText then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
                 magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-"..magnitudeStr or magnitudeStr
