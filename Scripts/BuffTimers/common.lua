@@ -10,6 +10,7 @@ local I = require('openmw.interfaces')
 local storage = require("openmw.storage")
 local modInfo = require("Scripts.BuffTimers.modInfo")
 local shader = require('Scripts.BuffTimers.radialSwipe')
+local API = require('Scripts.BuffTimers.api')
 local uiSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
 local iconOptions = uiSettings:get("iconOptions")
 local timerColor = uiSettings:get("timerColor") -- color returns in rgb
@@ -384,32 +385,44 @@ end
 -- New stuff 9-22-2024
 common.createFxTable = function(spellList)
     local fxTable = {}
-    fxKey = {}  -- clear out stale old keys. 
-  -- Iterate over active spells
-      for _, spells in pairs(spellList) do
+    fxKey = {} -- clear out stale old keys.
+    -- Iterate over active spells
+    for _, spells in pairs(spellList) do
         local activeSpellId = spells.activeSpellId
-        for _, effect in pairs(spells.effects) do
-          -- Create a copy of the effect and add activeSpellId
-          local effectWithId = {
-            activeSpellId = activeSpellId,
-            id = effect.id,
-            name = effect.name,
-            index = effect.index,
-            minMagnitude = effect.minMagnitude,
-            maxMagnitude = effect.maxMagnitude,
-            duration = effect.duration,
-            durationLeft = effect.durationLeft,
-            magnitudeThisFrame = effect.magnitudeThisFrame,
-            affectedSkill = effect.affectedSkill,
-            affectedAttribute = effect.affectedAttribute,
-            icon = magRecs[effect.id].icon,
-            parentSpellName = spells.name
-          }
-          local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
-          fxKey[uniqueKey] = true -- Add the unique Effecet as a key to the fxKey table
-          table.insert(fxTable, effectWithId)
+
+        local customEffects = API.interface.getCustomEffects(spells)
+        if (customEffects) then
+            -- If any registered custom effects for this spell
+            for _, effect in ipairs(customEffects) do
+                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
+                table.insert(fxTable, effect)
+            end
+        else
+            -- Otherwise use default effect
+            for _, effect in pairs(spells.effects) do
+                -- Create a copy of the effect and add activeSpellId
+                local effectWithId = {
+                    activeSpellId = activeSpellId,
+                    id = effect.id,
+                    name = effect.name,
+                    index = effect.index,
+                    minMagnitude = effect.minMagnitude,
+                    maxMagnitude = effect.maxMagnitude,
+                    duration = effect.duration,
+                    durationLeft = effect.durationLeft,
+                    magnitudeThisFrame = effect.magnitudeThisFrame,
+                    affectedSkill = effect.affectedSkill,
+                    affectedAttribute = effect.affectedAttribute,
+                    icon = magRecs[effect.id].icon,
+                    parentSpellName = spells.name
+                }
+                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
+                table.insert(fxTable, effectWithId)
+            end
         end
-      end
+    end
     return fxTable
 end
 
