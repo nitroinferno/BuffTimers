@@ -58,6 +58,8 @@ uiSettings:subscribe(async:callback(function(section, key)
             uiSettings:get(key)
         elseif key == "debuffAlign" then
             uiSettings:get(key)
+        elseif key == "showMagnitude" then
+            showMagnitude = uiSettings:get(key)
         end
     end
 end))
