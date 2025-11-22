@@ -45,5 +45,41 @@ The buff icons have tooltip mouseover support as well.
     
 7. Save file. 
     
+## API for modders
 
+BuffTimers exposes an API for modders, so mod authors can hook into the effect system and display buffs or debuffs with custom icons. This is helpful to prevent cluttering of effects that are predictable, like perhaps wounds, environmental effects, or other long-term, but still temporary effects.
 
+Usage (see Scripts/BuffTimers/api.lua for more information):
+
+```lua
+local I = require("openmw.interfaces")
+
+local function myPredicate(spell) 
+	return spell.id == "my_custom_icon_spell"
+end
+
+local function myEffectFactory(spell) 
+    -- Take only the longest effect
+    local result = nil
+    for _, effect in pairs(spell.effects) do
+        if (not result or (effect.durationLeft > result.durationLeft)) then
+            result = effect
+        end
+    end
+
+    -- Returns a list of effect infos
+    return {
+        {
+            activeSpellId = spell.activeSpellId,
+            id = result.id,
+            index = result.index,
+            duration = result.duration,
+            durationLeft = result.durationLeft,
+            icon = "icons/myCoolIcon.dds",
+            parentSpellName = spell.name,
+        },
+    }
+end
+
+I.BuffTimers.registerCustomEffect(myPredicate, myEffectFactory)
+```
