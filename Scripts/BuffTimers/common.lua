@@ -496,10 +496,13 @@ common.ui.rootFlex = function(content, args, id)
                 if TOOLTIP then -- handle updating the tooltip. 
                     TOOLTIP.layout.props.position = e.position
                     TOOLTIP.layout.props.anchor = setTooltipOffset(e.position)
+                    if layout.userdata.fx then
+                        common.updateToolTipText(layout.userdata.fx,TOOLTIP)
+                    end
 					TOOLTIP:update()
 					layout.userdata.lastMousePos = e.position
                 elseif layout.userdata.fx then
-                    TOOLTIP = common.ui.toolTipBox(layout.userdata.fx, e.position) -- handle creating the tooltip if it does not exist
+                    TOOLTIP = common.ui.toolTipBox(layout.userdata.fx, layout, e.position) -- handle creating the tooltip if it does not exist
                     -- need to handle offsetting tool tip if the user sets the buffs to align on end, need to set anchor(-1,0)
 
                 end
@@ -852,7 +855,7 @@ end
 
 -- Need to figure out how to handle this when the ui-modes omwscript is being used.. 
 -- it creates copies of the tooltip and doesnt clear them
-common.ui.toolTipBox = function(fxData,position)
+common.ui.toolTipBox = function(fxData,layoutData,position)
     if not fxData then return end
     local fx = fxData
     TOOLTIP_ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id -- Update the tracked tooltip unique id
@@ -915,16 +918,21 @@ common.ui.toolTipBox = function(fxData,position)
                 })
             }
         }),
+        userdata = {
+            origin = layoutData
+        },
     }
     --print("Printing the tooltipLayout ",tooltip.layout.content[1].content[1].props.text)
 return tooltip
 end
 
 -- Function to update the tooltip's text
-common.updateTooltip = function(newText)
+common.updateTooltip = function()
+    local data, id = common.getTooltip()
+    print(data, id)
     if TOOLTIP then
         -- Assuming TOOLTIP has a method to update its content
-        TOOLTIP:updateContent(newText)  -- Call an update method to change the text
+        TOOLTIP:update()  -- Call an update method to change the text
     end
 end
 
@@ -953,7 +961,32 @@ end
 
 -- Optional: Function to get the current tooltip (for checking or debugging)
 common.getTooltip = function()
-    return TOOLTIP
+    return TOOLTIP, TOOLTIP_ID
+end
+
+common.updateToolTipText = function(fxData, tooltipElement)
+    if not fxData then return end
+    local fx = fxData
+    local inputText = fx.parentSpellName ..'\n'..fx.name.." "
+    --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
+
+    -- Check for fx.magnitudeThisFrame and concatenate
+    if fx.magnitudeThisFrame then
+        inputText = inputText .. ":" .. tostring(util.round(fx.magnitudeThisFrame)) .. " "
+    end
+
+    -- Check for fx.durationLeft and concatenate
+    if fx.durationLeft then
+        inputText = inputText .. "Duration: " .. tostring(common.formatDuration(fx.durationLeft))
+    end
+    local displayText = common.ui.makeTextContent(inputText)
+	displayText.props.textColor = color.rgb(202 / 255, 165 / 255, 96 / 255)
+    displayText.props.autoSize = true
+    displayText.props.textAlignH = Amid
+    displayText.props.wordWrap = false
+    displayText.props.textSize = 16
+	tooltipElement.layout.content[1].content = ui.content({displayText})
+	tooltipElement:update()
 end
 
 return common

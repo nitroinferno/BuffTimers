@@ -103,7 +103,7 @@ local buffPositions = uiPositions:get("BuffPositions")
 
 -- Initialize if it's nil
 if not buffPositions then
-    uiPositions:set("BuffPositions", {buffPos = v2(0, 0), debuffPos = v2(0, iconSize * 2)})
+    uiPositions:set("BuffPositions", {buffPos = v2(0, 0), debuffPos = v2(0, 0)})
 end
 
 local function traverseTable(tbl, indent)
@@ -249,11 +249,11 @@ local function setupMouseEvents(flexWrapElement)
         mousePress = async:callback(function(coord, layout)
             layout.userData.doDrag = true
             layout.userData.lastMousePos = coord.position
-            print("mouseclicked!", coord.position, layout.name)
+            --print("mouseclicked!", coord.position, layout.name)
         end),
         mouseRelease = async:callback(function(_, layout)
             layout.userData.doDrag = false
-            print("mousereleased!")
+            --print("mousereleased!")
         end),
         mouseMove = async:callback(function(coord, layout)
             if not layout.userData.doDrag then return end
@@ -340,8 +340,10 @@ local function initLayouts(callBack)
     debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
 
     -- Handle nil on initialization
-    debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 2 * iconSize)
+    debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 0)
     debuff_FlexWrapElement.layout.props.position = debuffPosition
+    debuff_FlexWrapElement.layout.props.anchor = v2(1,0)
+    debuff_FlexWrapElement.layout.props.relativePosition = v2(1,0)
     setupMouseEvents(debuff_FlexWrapElement)
 
     -- Initialize Buff Layouts
@@ -355,7 +357,7 @@ local function initLayouts(callBack)
     Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
 
     -- Handle nil on initialization
-    buffPosition = buffPositions and buffPositions.buffPos or v2(0, 2 * iconSize)
+    buffPosition = buffPositions and buffPositions.buffPos or v2(0, 0)
     Buff_FlexWrapElement.layout.props.position = buffPosition
     setupMouseEvents(Buff_FlexWrapElement)
     --print(tostring(Buff_FlexWrapElement.layout.props.alpha))
@@ -378,7 +380,7 @@ local function getBoxSetting()
 end
 
 getBoxSetting()
-
+local dataTT, idTT, rootNameTT
 -- Function that updates both Buffs and Debuffs in UI
 local function updateUI_Element()
     -- Destroy previous tooltips
@@ -419,8 +421,18 @@ local function updateUI_Element()
     -- Update the alpha value (flashing effect)
     updateAlpha()
 
+    -- Get tooltip data
+    dataTT, idTT = com.getTooltip()
+    if dataTT then
+        rootNameTT = dataTT.layout.userdata.origin.name --name of the root layout
+    end
     -- Update alpha for debuff icons
     for i, layout in ipairs(rootLayoutDebuffs) do
+        if dataTT then
+            if rootLayoutDebuffs[i].name == rootNameTT then
+                com.updateToolTipText(rootLayoutDebuffs[i].userdata.fx, dataTT)
+            end
+        end
         if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
             wrapFxIconsDebuffs[i].props.alpha = alpha
         end
@@ -428,6 +440,11 @@ local function updateUI_Element()
 
     -- Update alpha for buff icons
     for i, layout in ipairs(rootLayoutBuffs) do
+        if dataTT then
+            if rootLayoutBuffs[i].name == rootNameTT then
+                com.updateToolTipText(rootLayoutBuffs[i].userdata.fx, dataTT)
+            end
+        end
         if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
             wrapFxIconsBuffs[i].props.alpha = alpha
         end
@@ -436,6 +453,7 @@ local function updateUI_Element()
     -- Update both debuff and buff flexWrap elements
     debuff_FlexWrapElement:update()
 	Buff_FlexWrapElement:update()
+
 end
 
 local buffElement = {}
@@ -474,7 +492,7 @@ local function onKeyPress(key)
     end
 
     if key.code == resetPositions then
-        uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,iconSize*2)}) --Consider getting relative position
+        uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,0)}) --Consider getting relative position
         if debuff_FlexWrapElement then debuff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").debuffPos; debuff_FlexWrapElement:update() end
         if Buff_FlexWrapElement then Buff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").buffPos; Buff_FlexWrapElement:update() end
         --print(xRes)
@@ -492,11 +510,11 @@ end
 
 local function onUpdate(dt)
     -- If this function runs, the game is unpaused
-    if wasPaused then
-        --print("Game unpaused!")
-        com.destroyTooltip('force')
-        wasPaused = false -- Update the state
-    end
+    -- if wasPaused then
+    --     --print("Game unpaused!")
+    --     com.destroyTooltip('force')
+    --     wasPaused = false -- Update the state
+    -- end
     if not I.UI.isHudVisible() and timer then
         --print("Hiding the Buff timers for screenshots!")
         stopUpdating()
@@ -526,9 +544,10 @@ local function onFrame(dt)
 end
 
 local function onSave()
-    local buffPos = Buff_FlexWrapElement.layout.props.position
-    local debuffPos = debuff_FlexWrapElement.layout.props.position
-    uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos})
+    print("OnSave called....")
+    local buffPos = Buff_FlexWrapElement.layout and Buff_FlexWrapElement.layout.props.position
+    local debuffPos = debuff_FlexWrapElement.layout and debuff_FlexWrapElement.layout.props.position
+    if buffPos and debuffPos then uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos}) end
 end
 
 local function onLoad()
