@@ -569,7 +569,7 @@ return {
         UiModeChanged = function(data)
             --print('UiModeChanged from', data.oldMode , 'to', data.newMode, '('..tostring(data.arg)..')')
             if not data.newMode then
-                print('Attempting to Destroy Tooltip...')
+                --print('Attempting to Destroy Tooltip...')
                 com.destroyTooltip('force')
             end
         end
