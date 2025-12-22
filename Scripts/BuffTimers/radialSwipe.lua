@@ -5,6 +5,7 @@ local util = require('openmw.util')
 local shader = {}
 local modInfo = require("Scripts.BuffTimers.modInfo")
 local storage = require("openmw.storage")
+local async = require('openmw.async')
 local userInterfaceSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
 local swipeOpt = userInterfaceSettings:get("radialSwipe")
 
@@ -53,5 +54,16 @@ shader.Overlay = function(atlasMap,iconSize)
     }
     return radialSwipeOverlay
 end
+
+-- Set the scale of the icons by checking for changes in the UI settings. 
+userInterfaceSettings:subscribe(async:callback(function(section, key)
+    if key then
+        print('Value is changed:', key, '=', userInterfaceSettings:get(key))
+        if key == "radialSwipe" then
+            swipeOpt = userInterfaceSettings:get("radialSwipe")
+        end
+    end
+end))
+
 
 return shader

@@ -19,6 +19,7 @@ local iconPadding = uiSettings:get("iconPadding")
 local buffLimit = uiSettings:get("buffLimit")
 local rowLimit = uiSettings:get("rowLimit")
 local showMagnitude = uiSettings:get("showMagnitude")
+local textScale = uiSettings:get("textScale")
 
 --print("COLOR IS___________",timerColor)
 
@@ -60,6 +61,8 @@ uiSettings:subscribe(async:callback(function(section, key)
             uiSettings:get(key)
         elseif key == "showMagnitude" then
             showMagnitude = uiSettings:get(key)
+        elseif key == "textScale" then
+            textScale = uiSettings:get(key)
         end
     end
 end))
@@ -373,7 +376,7 @@ common.formatDuration = function(timeRemaining)
     elseif time > 60 then
         time = util.round(time/60)
         time = time .. 'm'
-    elseif time > 10 then
+    elseif time >= 10 then
         time = util.round(time)
         time = time .. 's'
     else
@@ -706,10 +709,13 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
 	-- do some processing on fxTable to create widgets or elements
 	local root_layouts = {}
 	local padded_roots = {}
-    
+    local tScale = 1.0
     --Default size table
-    local sizeTable = {tSize = iconSize and iconSize*0.28 or 9, size ={x= iconSize and iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}}
-
+    local sizeTable = {tSize = iconSize*0.28 or 9, size ={x= iconSize and iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}}
+    local ttxtScale = textScale
+    local ttxtBase = iconSize*0.3
+    local ttxtSz =  math.min(ttxtScale*ttxtBase,iconSize*0.5)
+    -- Seems 21/35 is the ratio to not exceed
 
 
 	for _, fx in ipairs(fxTable) do
@@ -733,16 +739,18 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 else
                     inText = inText .. ': ' .. magnitudeStr
                 end
+                sizeTable["id"] = ID
                 fx_text = common.ui.makeTextContent(string.lower(inText), sizeTable)
                 fx_text.props.textColor = detailTextColor
                 --print(fx_text.name,fx_text.props.textSize)
             else
-                --If it has no effect just assign it a space holder. 
-                fx_text = common.ui.makeTextContent("",{tSize = iconSize*0.28 or 9, size ={x= iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}, id = ID})
+                --If it has no effect just assign it a space holder.
+                sizeTable["id"] = ID
+                fx_text = common.ui.makeTextContent("",sizeTable)
             end
             fx_icon = common.ui.makeIconContent(fx.icon,{size = iconSize or 30})
             fx_icon.content:add(shader.Overlay(shader.radialWipe(fx),iconSize))
-            local timeArgs = {color = timerColor, h = Amid, tSize = iconSize*0.3+1 or 10, size ={x= iconSize or 30,y=iconSize and iconSize*0.3+1 or 10}}
+            local timeArgs = {color = timerColor, h = Amid, tSize = ttxtSz+1 or 10, size ={x= iconSize or 30,y=iconSize and ttxtSz+1 or 10}}
             fx_timeRemain =  common.ui.makeTextContent(timeText, timeArgs)
 
             --Determine the rootFlexSize Props needed for children content
