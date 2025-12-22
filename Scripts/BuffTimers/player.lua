@@ -33,6 +33,7 @@ local auxUi = require('openmw_aux.ui')
 local wasPaused = false -- Track the previous pause state
 
 local modInfo = require("Scripts.BuffTimers.modInfo")
+local API = require("Scripts.BuffTimers.api")
 
 local playerSettings = storage.playerSection("SettingsPlayer" .. modInfo.name)
 local userInterfaceSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
@@ -608,14 +609,16 @@ end))
 
 
 return {
-	engineHandlers = {
-		onKeyPress = onKeyPress,
-		onKeyRelease = onKeyRelease,
+    interfaceName = 'BuffTimers',
+    interface = API.interface,
+    engineHandlers = {
+       onKeyPress = onKeyPress,
+       onKeyRelease = onKeyRelease,
         onUpdate = onUpdate,
         onSave = onSave,
         onLoad = onLoad,
         onFrame = onFrame,
-	},
+    },
     eventHandlers = {
         UiModeChanged = function(data)
             --print('UiModeChanged from', data.oldMode , 'to', data.newMode, '('..tostring(data.arg)..')')
