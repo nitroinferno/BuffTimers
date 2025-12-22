@@ -23,6 +23,8 @@ local pageDescription = "By Nitro\nv" .. modInfo.version .. "\n\nBuff Timers\n\n
 local modEnableDescription = "This enables the mod or disables it."
 local showMessagesDescription = "Enables UI messages to be shown for any cases which require it. (Currently none)"
 local iconOptions = "Select which options you want for the icons the following options are available: \n 1. All (contains all below)\n 2. Icon Pulse on low time\n 3. Radial Swipe"
+local sizeAndPosition = "Enable this to show the area box where buff icons will be rendered. When enabled allows click + drag on buff/debuff regions for repositioning." 
+.."\n\nMouse Release saves the position, press '-' key to reset to default position."
 
 local menuParams = {
 	const = {
@@ -70,7 +72,7 @@ I.Settings.registerGroup {
 	settings = {
 		setting("showMessages", "checkbox", {}, "Show Messages", showMessagesDescription, true),
 		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 35, min/max is: 1/100", 35),
-		setting("showBox","checkbox",{}, "Show Buff Borders", "Show the area box where buff icons will be rendered. Useful for positioning the buffs display area",true),
+		setting("showBox","checkbox",{}, "Size & Positioning Mode (Buff/Debuff Box Borders)", sizeAndPosition,true),
 		setting("showMagnitude","checkbox",{}, "Show Magnitude", "Display alias text and a magnitude on top of the icon",true),
 		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("debuffAlign","checkbox",{}, "Align deBuffs Left", "deBuffs fill in each row from the left. If turned off buffs will align on the right hand side",true),

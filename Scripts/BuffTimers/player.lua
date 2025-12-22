@@ -67,17 +67,34 @@ local function initLayer()
 end
 initLayer()
 
----@return userData
+---@return table
 local function getStoredPositions()
-    local positions = uiPositions:get("BuffPositions")
-    if not positions then
-        positions = { buffPos = v2(0, 0), debuffPos = v2(0, 0) }
-        uiPositions:set("BuffPositions", positions)
+    local stored = uiPositions:get("BuffPositions")
+
+    if not stored then
+        stored = {
+            buffPos = v2(0, 0),
+            debuffPos = v2(0, 0),
+        }
+        uiPositions:set("BuffPositions", stored)
     end
-    return positions
+    -- Return a copy of a table, not a pointer to userData reference 
+    return {
+        buffPos   = stored.buffPos or v2(0, 0),
+        debuffPos = stored.debuffPos or v2(0, 0),
+    }
 end
 
+
 local buffPositions = getStoredPositions()
+
+local function setPositionForKey(key,pos)
+    if not key then return end
+    local positions = getStoredPositions()
+    positions[key] = pos
+    uiPositions:set("BuffPositions", positions)
+    buffPositions = positions
+end
 
 local function traverseTable(tbl, indent)
     indent = indent or 0
@@ -220,15 +237,22 @@ end
 local function setupMouseEvents(flexWrapElement)
     flexWrapElement.layout.events = {
         mousePress = async:callback(function(coord, layout)
+            if not showBox then return end
             layout.userData.doDrag = true
             layout.userData.lastMousePos = coord.position
             --print("mouseclicked!", coord.position, layout.name)
         end),
         mouseRelease = async:callback(function(_, layout)
+            if not showBox then return end
             layout.userData.doDrag = false
+            local key = layout.userData.positionKey
+            if key then
+                setPositionForKey(key, layout.props.position)
+            end
             --print("mousereleased!")
         end),
         mouseMove = async:callback(function(coord, layout)
+            if not showBox then return end
             if not layout.userData.doDrag then return end
             local props = layout.props
             props.position = props.position - (layout.userData.lastMousePos - coord.position)
@@ -322,6 +346,7 @@ local function buildEffectGroup(def)
     local flex = com.ui.createFlex(rows, false)
     updateFlexWrapProps(flex, rows)
     local element = com.ui.createElementContainer(flex)
+    element.layout.userData.positionKey = def.positionKey -- Store a unique ID for buffPos or debuffPos
 
     local positions = buffPositions or getStoredPositions()
     element.layout.props.position = (positions and positions[def.positionKey]) or v2(0, 0)
