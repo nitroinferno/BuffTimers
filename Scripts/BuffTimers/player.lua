@@ -57,6 +57,7 @@ local detailTextColor = userInterfaceSettings:get("detailTextColor")
 local iconPadding = userInterfaceSettings:get("iconPadding")
 local rowLimit = userInterfaceSettings:get("rowLimit")
 local buffLimit = userInterfaceSettings:get("buffLimit")
+local enable = playerSettings:get("modEnable")
 
 local function initLayer()
     if ui.layers[5].name == 'Effects_Layer' then return end -- Check if this layer already exists. 
@@ -65,46 +66,17 @@ local function initLayer()
 end
 initLayer()
 
--- Set the scale of the icons by checking for changes in the UI settings. 
-userInterfaceSettings:subscribe(async:callback(function(section, key)
-    if key then
-        print('Value is changed:', key, '=', userInterfaceSettings:get(key))
-        if key == "showMessages" then
-            showMessages = userInterfaceSettings:get(key)
-        elseif key == "iconScaling" then
-            iconSize = userInterfaceSettings:get(key)
-        elseif key == "showBox" then
-            showBox = userInterfaceSettings:get(key)
-        elseif key == "buffAlign" then
-            buffAlign = userInterfaceSettings:get(key)
-        elseif key == "debuffAlign" then
-            debuffAlign = userInterfaceSettings:get(key)
-        elseif key == "splitBuffsDebuffs" then
-            splitBuffsDebuffs = userInterfaceSettings:get(key)
-        elseif key == "iconOptions" then
-            iconOptions = userInterfaceSettings:get(key)
-        elseif key == "timerColor" then
-            timerColor = userInterfaceSettings:get(key)
-        elseif key == "detailTextColor" then
-            detailTextColor = userInterfaceSettings:get(key)
-        elseif key == "iconPadding" then
-            iconPadding = userInterfaceSettings:get(key)
-        elseif key == "rowLimit" then
-            rowLimit = userInterfaceSettings:get(key)
-        elseif key == "buffLimit" then
-            buffLimit = userInterfaceSettings:get(key)
-        end
-    else
-        print('All values are changed')
+---@return userData
+local function getStoredPositions()
+    local positions = uiPositions:get("BuffPositions")
+    if not positions then
+        positions = { buffPos = v2(0, 0), debuffPos = v2(0, 0) }
+        uiPositions:set("BuffPositions", positions)
     end
-end))
-
-local buffPositions = uiPositions:get("BuffPositions")
-
--- Initialize if it's nil
-if not buffPositions then
-    uiPositions:set("BuffPositions", {buffPos = v2(0, 0), debuffPos = v2(0, 0)})
+    return positions
 end
+
+local buffPositions = getStoredPositions()
 
 local function traverseTable(tbl, indent)
     indent = indent or 0
@@ -286,81 +258,123 @@ local function grabIndexes(tbl, x)
     return result
 end
 
---[[ Original CODE in case something breaks..
--- -- Initialize Buff and Debuff Layouts
--- local rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
--- rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
--- wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
--- local rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
--- local debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
--- updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
--- local debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
+-- Effect group helpers
+local function createEffectGroup(def)
+    return {
+        key = def.key,
+        filter = def.filter,
+        align = def.align,
+        positionKey = def.positionKey,
+        anchor = def.anchor,
+        relativePos = def.relativePos,
+    }
+end
 
--- -- Handle nil on initialization
--- local debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 2 * iconSize)
+local function getActiveEffectGroups()
+    if splitBuffsDebuffs then
+        return {
+            createEffectGroup {
+                key = "buffs",
+                filter = com.fltBuffTimers,
+                align = buffAlign,
+                positionKey = "buffPos",
+            },
+            createEffectGroup {
+                key = "debuffs",
+                filter = com.fltDebuffTimers,
+                align = debuffAlign,
+                positionKey = "debuffPos",
+                anchor = v2(1,0),
+                relativePos = v2(1,0),
+            },
+        }
+    end
 
--- debuff_FlexWrapElement.layout.props.position = debuffPosition
--- setupMouseEvents(debuff_FlexWrapElement)
+    return {
+        createEffectGroup {
+            key = "combined",
+            filter = nil,
+            align = buffAlign,
+            positionKey = "buffPos",
+        },
+    }
+end
 
--- local rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
--- rootLayoutDebuffs = grabIndexes(rootLayoutBuffs,buffLimit)
--- wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
--- local rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
--- local buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
--- updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
--- local Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
+local function updateEffectGroupVisuals(group, alphaValue, tooltipData, tooltipRootName)
+    for i, layout in ipairs(group.rootLayouts) do
+        if tooltipData and layout.name == tooltipRootName then
+            com.updateToolTipText(layout.userdata.fx, tooltipData)
+        end
 
--- -- Handle nil on initialization
--- local buffPosition = buffPositions and buffPositions.buffPos or v2(0, 2 * iconSize)
+        if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
+            group.wraps[i].props.alpha = alphaValue
+        end
+    end
+end
 
--- Buff_FlexWrapElement.layout.props.position = buffPosition
--- setupMouseEvents(Buff_FlexWrapElement)
--- Declare all locals first (so they persist across resets)
---]]
-local rootLayoutDebuffs, wrapFxIconsDebuffs
-local rowsOfDebuffIcons, debuff_FlexWrap, debuff_FlexWrapElement
-local debuffPosition
+local function buildEffectGroup(def)
+    local rootLayouts, wraps = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, def.filter)
+    rootLayouts = grabIndexes(rootLayouts, buffLimit)
+    wraps = grabIndexes(wraps, buffLimit)
 
-local rootLayoutBuffs, wrapFxIconsBuffs
-local rowsOfBuffIcons, buff_FlexWrap, Buff_FlexWrapElement
-local buffPosition
+    local rows = com.flexWrapper(rootLayouts, { iconsPerRow = rowLimit, Alignment = getAlignment(def.align) })
+    local flex = com.ui.createFlex(rows, false)
+    updateFlexWrapProps(flex, rows)
+    local element = com.ui.createElementContainer(flex)
+
+    local positions = buffPositions or getStoredPositions()
+    element.layout.props.position = (positions and positions[def.positionKey]) or v2(0, 0)
+    if def.anchor then
+        element.layout.props.anchor = def.anchor
+    end
+    if def.relativePos then
+        element.layout.props.relativePosition = def.relativePos
+    end
+    setupMouseEvents(element)
+
+    return {
+        key = def.key,
+        filter = def.filter,
+        align = def.align,
+        positionKey = def.positionKey,
+        rootLayouts = rootLayouts,
+        wraps = wraps,
+        rows = rows,
+        flex = flex,
+        element = element,
+    }
+end
+
+local effectGroups = {}
+
+local function destroyEffectGroups()
+    for key, group in pairs(effectGroups) do
+        if group.element then
+            group.element:destroy()
+        end
+        effectGroups[key] = nil
+    end
+end
+
+local function applyPositionsToGroups(positions)
+    for _, group in pairs(effectGroups) do
+        local pos = positions[group.positionKey]
+        if pos and group.element and group.element.layout then
+            group.element.layout.props.position = pos
+            group.element:update()
+        end
+    end
+end
 
 -- Initialization function
 local function initLayouts(callBack)
-    if debuff_FlexWrapElement then debuff_FlexWrapElement:destroy() end
-	if debuff_FlexWrapElement then Buff_FlexWrapElement:destroy() end
-    -- Initialize Buff and Debuff Layouts
-    rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
-    rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs, buffLimit)
-    wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs, buffLimit)
+    destroyEffectGroups()
 
-    rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
-    debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
-    updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
-    debuff_FlexWrapElement = com.ui.createElementContainer(debuff_FlexWrap)
+    for _, def in ipairs(getActiveEffectGroups()) do
+        local group = buildEffectGroup(def)
+        effectGroups[group.key] = group
+    end
 
-    -- Handle nil on initialization
-    debuffPosition = buffPositions and buffPositions.debuffPos or v2(0, 0)
-    debuff_FlexWrapElement.layout.props.position = debuffPosition
-    debuff_FlexWrapElement.layout.props.anchor = v2(1,0)
-    debuff_FlexWrapElement.layout.props.relativePosition = v2(1,0)
-    setupMouseEvents(debuff_FlexWrapElement)
-
-    -- Initialize Buff Layouts
-    rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
-    rootLayoutBuffs = grabIndexes(rootLayoutBuffs, buffLimit)
-    wrapFxIconsBuffs = grabIndexes(wrapFxIconsBuffs, buffLimit)
-
-    rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
-    buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
-    updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
-    Buff_FlexWrapElement = com.ui.createElementContainer(buff_FlexWrap)
-
-    -- Handle nil on initialization
-    buffPosition = buffPositions and buffPositions.buffPos or v2(0, 0)
-    Buff_FlexWrapElement.layout.props.position = buffPosition
-    setupMouseEvents(Buff_FlexWrapElement)
-    --print(tostring(Buff_FlexWrapElement.layout.props.alpha))
     if callBack then callBack() end
 end
 
@@ -370,90 +384,53 @@ initLayouts()
 
 --Funtion whether to display box around icons. 
 local function getBoxSetting()
-    if not showBox then
-        Buff_FlexWrapElement.layout.props.alpha = 0
-		debuff_FlexWrapElement.layout.props.alpha = 0
-    else 
-        Buff_FlexWrapElement.layout.props.alpha = 0.2
-		debuff_FlexWrapElement.layout.props.alpha = 0.2
+    local alphaBox = showBox and 0.2 or 0
+    for _, group in pairs(effectGroups) do
+        if group.element and group.element.layout then
+            group.element.layout.props.alpha = alphaBox
+        end
     end
 end
 
 getBoxSetting()
-local dataTT, idTT, rootNameTT
 -- Function that updates both Buffs and Debuffs in UI
 local function updateUI_Element()
-    -- Destroy previous tooltips
     com.destroyTooltip(true)
 	getBoxSetting()
 
-    -- Update debuffs
-    rootLayoutDebuffs, wrapFxIconsDebuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltDebuffTimers)
-    rootLayoutDebuffs = grabIndexes(rootLayoutDebuffs,buffLimit)
-    wrapFxIconsDebuffs = grabIndexes(wrapFxIconsDebuffs,buffLimit)
-    rowsOfDebuffIcons = com.flexWrapper(rootLayoutDebuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(debuffAlign) })
-    debuff_FlexWrap = com.ui.createFlex(rowsOfDebuffIcons, false)
-    updateFlexWrapProps(debuff_FlexWrap, rowsOfDebuffIcons)
+    for _, g in pairs(effectGroups) do
+        g.rootLayouts, g.wraps = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, g.filter)
+        g.rootLayouts = grabIndexes(g.rootLayouts,buffLimit)
+        g.wraps = grabIndexes(g.wraps,buffLimit)
+        g.rows = com.flexWrapper(g.rootLayouts, { iconsPerRow = rowLimit, Alignment = getAlignment(g.align) })
+        g.flex = com.ui.createFlex(g.rows, false)
+        updateFlexWrapProps(g.flex, g.rows)
+    end
 
-    -- Update buffs
-    rootLayoutBuffs, wrapFxIconsBuffs = com.createRootFlexLayouts(iconPadding and 'pad', iconSize, com.fltBuffTimers)
-    rootLayoutBuffs = grabIndexes(rootLayoutBuffs,buffLimit)
-    wrapFxIconsBuffs = grabIndexes(wrapFxIconsBuffs,buffLimit)
-    rowsOfBuffIcons = com.flexWrapper(rootLayoutBuffs, { iconsPerRow = rowLimit, Alignment = getAlignment(buffAlign) })
-    buff_FlexWrap = com.ui.createFlex(rowsOfBuffIcons, false)
-    updateFlexWrapProps(buff_FlexWrap, rowsOfBuffIcons)
-
-    -- Get current layouts for buffs and debuffs
-    local curDebuff_FlexWrapElement = debuff_FlexWrapElement.layout  -- Debuffs layout
-    local curBuff_FlexWrapElement = Buff_FlexWrapElement.layout    -- Buffs layout (may need a separate flexWrapElement)
-
-    -- Update debuff content
     local actualIconSz = calculateDynamicSize(iconSize,iconPadding)
     local buffBoxSize = v2(actualIconSz.x*rowLimit, actualIconSz.y*(util.round(buffLimit/rowLimit)))
-    curDebuff_FlexWrapElement.content = ui.content{
-        debuff_FlexWrap or showBox and {props = {size = buffBoxSize}} or {}
-    }
-    -- Update buff content
-    curBuff_FlexWrapElement.content = ui.content{
-        buff_FlexWrap or showBox and {props = {size = buffBoxSize}} or {}
-    }
 
-    -- Update the alpha value (flashing effect)
+    for _, g in pairs(effectGroups) do
+        g.element.layout.content = ui.content{
+            g.flex or showBox and {props = {size = buffBoxSize}} or {}
+        }
+    end
+
     updateAlpha()
 
-    -- Get tooltip data
-    dataTT, idTT = com.getTooltip()
-    if dataTT then
-        rootNameTT = dataTT.layout.userdata.origin.name --name of the root layout
-    end
-    -- Update alpha for debuff icons
-    for i, layout in ipairs(rootLayoutDebuffs) do
-        if dataTT then
-            if rootLayoutDebuffs[i].name == rootNameTT then
-                com.updateToolTipText(rootLayoutDebuffs[i].userdata.fx, dataTT)
-            end
-        end
-        if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
-            wrapFxIconsDebuffs[i].props.alpha = alpha
-        end
+    local tooltipData = com.getTooltip()
+    local rootNameTT = tooltipData and tooltipData.layout.userdata.origin.name --name of the root layout
+
+    for _, g in pairs(effectGroups) do
+        updateEffectGroupVisuals(g, alpha, tooltipData, rootNameTT)
+        g.element:update()
     end
 
-    -- Update alpha for buff icons
-    for i, layout in ipairs(rootLayoutBuffs) do
-        if dataTT then
-            if rootLayoutBuffs[i].name == rootNameTT then
-                com.updateToolTipText(rootLayoutBuffs[i].userdata.fx, dataTT)
-            end
-        end
-        if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
-            wrapFxIconsBuffs[i].props.alpha = alpha
-        end
-    end
+end
 
-    -- Update both debuff and buff flexWrap elements
-    debuff_FlexWrapElement:update()
-	Buff_FlexWrapElement:update()
-
+local function rebuildAllEffectGroups()
+    initLayouts(getBoxSetting)
+    updateUI_Element()
 end
 
 local buffElement = {}
@@ -475,27 +452,38 @@ local function stopUpdating()
 end
 
 local function onKeyPress(key)
-	local tempKeyBind = input.KEY.G -- Perhaps use this key to toggle the UI on/off
-
     local SavePositions = input.KEY.Equals
     local resetPositions = input.KEY.Minus
     local toggleBox = input.KEY.Semicolon
     if (not playerSettings:get("modEnable")) or (key.code ~= SavePositions) and (key.code ~= resetPositions) and (key.code ~= toggleBox) or core.isWorldPaused()  then return end
 
-    local buffPos = Buff_FlexWrapElement.layout.props.position
-    local debuffPos = debuff_FlexWrapElement.layout.props.position
-
     if key.code == SavePositions then
-        uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos})
+        print("Saving Positions onKeyPress...")
+        local stored = {}
+        for _, group in pairs(effectGroups) do
+            local element = group.element
+            if element then
+                local pos = element.layout and element.layout.props and element.layout.props.position
+                if pos and group.positionKey then
+                    --print(group.positionKey, pos)
+                    stored[group.positionKey] = pos
+                end
+            end
+        end
+        uiPositions:set("BuffPositions", stored)
+        buffPositions = stored
+        print(uiPositions:get("BuffPositions").buffPos)
         print(uiPositions:get("BuffPositions").debuffPos)
 
     end
 
     if key.code == resetPositions then
-        uiPositions:set("BuffPositions",{buffPos = v2(0,0), debuffPos = v2(0,0)}) --Consider getting relative position
-        if debuff_FlexWrapElement then debuff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").debuffPos; debuff_FlexWrapElement:update() end
-        if Buff_FlexWrapElement then Buff_FlexWrapElement.layout.props.position = uiPositions:get("BuffPositions").buffPos; Buff_FlexWrapElement:update() end
-        --print(xRes)
+        print("Reset Positions onKeyPress...")
+        local reset = {buffPos = v2(0,0), debuffPos = v2(0,0)} --Consider getting relative position
+        uiPositions:set("BuffPositions", reset)
+        buffPositions = reset
+        applyPositionsToGroups(reset)
+        print(uiPositions:get("BuffPositions").buffPos)
         print(uiPositions:get("BuffPositions").debuffPos)
     end
 
@@ -509,28 +497,18 @@ local function onKeyRelease(key)
 end
 
 local function onUpdate(dt)
-    -- If this function runs, the game is unpaused
-    -- if wasPaused then
-    --     --print("Game unpaused!")
-    --     com.destroyTooltip('force')
-    --     wasPaused = false -- Update the state
-    -- end
+    if not enable then return end
     if not I.UI.isHudVisible() and timer then
         --print("Hiding the Buff timers for screenshots!")
         stopUpdating()
-        local curDebuff_FlexWrapElement = debuff_FlexWrapElement and debuff_FlexWrapElement.layout  -- Debuffs layout
-        local curBuff_FlexWrapElement = debuff_FlexWrapElement and Buff_FlexWrapElement.layout    -- Buffs layout (may need a separate flexWrapElement)
-        --print("Destroying all buffTimers elements...")
         com.destroyTooltip('force')
-        debuff_FlexWrapElement:destroy()
-	    Buff_FlexWrapElement:destroy()
+        destroyEffectGroups()
     elseif I.UI.isHudVisible() and not timer then
         --If there is no timer, then stopupdating() has been called, reinitialize everything, startUpdating again. 
-        initLayouts(getBoxSetting)
+        rebuildAllEffectGroups()
         startUpdating() -- Creates the timer function
         --print("timer is not nil.. in the onUpdate function...")
     end
-
 end
 
 local function onFrame(dt)
@@ -545,9 +523,26 @@ end
 
 local function onSave()
     print("OnSave called....")
-    local buffPos = Buff_FlexWrapElement.layout and Buff_FlexWrapElement.layout.props.position
-    local debuffPos = debuff_FlexWrapElement.layout and debuff_FlexWrapElement.layout.props.position
-    if buffPos and debuffPos then uiPositions:set("BuffPositions",{buffPos = buffPos, debuffPos = debuffPos}) end
+    local stored = {}
+    local changed = false
+
+    for _, group in pairs(effectGroups) do
+        local element = group.element
+        if element then
+            local pos = element.layout and element.layout.props and element.layout.props.position
+            if pos and group.positionKey then
+                print(group.positionKey, pos)
+                stored[group.positionKey] = pos
+                changed = true
+            end
+        end
+    end
+
+    if changed then
+        --print(stored['buffPos'], stored['debuffPos'])
+        uiPositions:set("BuffPositions", stored)
+        buffPositions = stored
+    end
 end
 
 local function onLoad()
@@ -555,6 +550,62 @@ local function onLoad()
 end
 
 startUpdating()
+
+
+-- Set the scale of the icons by checking for changes in the UI settings. 
+userInterfaceSettings:subscribe(async:callback(function(section, key)
+    if key then
+        print('Value is changed:', key, '=', userInterfaceSettings:get(key))
+        if key == "showMessages" then
+            showMessages = userInterfaceSettings:get(key)
+        elseif key == "iconScaling" then
+            iconSize = userInterfaceSettings:get(key)
+        elseif key == "showBox" then
+            showBox = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
+        elseif key == "buffAlign" then
+            buffAlign = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
+        elseif key == "debuffAlign" then
+            debuffAlign = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
+        elseif key == "splitBuffsDebuffs" then
+            splitBuffsDebuffs = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
+        elseif key == "iconOptions" then
+            iconOptions = userInterfaceSettings:get(key)
+        elseif key == "timerColor" then
+            timerColor = userInterfaceSettings:get(key)
+        elseif key == "detailTextColor" then
+            detailTextColor = userInterfaceSettings:get(key)
+        elseif key == "iconPadding" then
+            iconPadding = userInterfaceSettings:get(key)
+        elseif key == "rowLimit" then
+            rowLimit = userInterfaceSettings:get(key)
+        elseif key == "buffLimit" then
+            buffLimit = userInterfaceSettings:get(key)
+        end
+    else
+        print('All values are changed')
+    end
+end))
+
+playerSettings:subscribe(async:callback(function(section, key)
+    if key == "modEnable" then
+        enable = playerSettings:get(key)
+        if not enable then
+            print("disabling.. ")
+            stopUpdating()
+            com.destroyTooltip('force')
+            destroyEffectGroups()
+        else
+            print("enabling.. ")
+            rebuildAllEffectGroups()
+            startUpdating() -- Creates the timer function
+        end
+    end
+end))
+
 
 return {
 	engineHandlers = {
