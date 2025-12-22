@@ -71,6 +71,7 @@ I.Settings.registerGroup {
 		setting("showMessages", "checkbox", {}, "Show Messages", showMessagesDescription, true),
 		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 35, min/max is: 1/100", 35),
 		setting("showBox","checkbox",{}, "Show Buff Borders", "Show the area box where buff icons will be rendered. Useful for positioning the buffs display area",true),
+		setting("showMagnitude","checkbox",{}, "Show Magnitude", "Display alias text and a magnitude on top of the icon",true),
 		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("debuffAlign","checkbox",{}, "Align deBuffs Left", "deBuffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("splitBuffsDebuffs","checkbox",{}, "Split Buffs and Debuffs\n-NOT IMPLEMENTED YET-", "This will set buff and debuffs into two distinct containers that you can place anywhere on the HUD", true),

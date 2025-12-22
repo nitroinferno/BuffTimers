@@ -10,6 +10,7 @@ local I = require('openmw.interfaces')
 local storage = require("openmw.storage")
 local modInfo = require("Scripts.BuffTimers.modInfo")
 local shader = require('Scripts.BuffTimers.radialSwipe')
+local API = require('Scripts.BuffTimers.api')
 local uiSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
 local iconOptions = uiSettings:get("iconOptions")
 local timerColor = uiSettings:get("timerColor") -- color returns in rgb
@@ -17,6 +18,7 @@ local detailTextColor = uiSettings:get("detailTextColor")
 local iconPadding = uiSettings:get("iconPadding")
 local buffLimit = uiSettings:get("buffLimit")
 local rowLimit = uiSettings:get("rowLimit")
+local showMagnitude = uiSettings:get("showMagnitude")
 
 --print("COLOR IS___________",timerColor)
 
@@ -56,6 +58,8 @@ uiSettings:subscribe(async:callback(function(section, key)
             uiSettings:get(key)
         elseif key == "debuffAlign" then
             uiSettings:get(key)
+        elseif key == "showMagnitude" then
+            showMagnitude = uiSettings:get(key)
         end
     end
 end))
@@ -383,32 +387,44 @@ end
 -- New stuff 9-22-2024
 common.createFxTable = function(spellList)
     local fxTable = {}
-    fxKey = {}  -- clear out stale old keys. 
-  -- Iterate over active spells
-      for _, spells in pairs(spellList) do
+    fxKey = {} -- clear out stale old keys.
+    -- Iterate over active spells
+    for _, spells in pairs(spellList) do
         local activeSpellId = spells.activeSpellId
-        for _, effect in pairs(spells.effects) do
-          -- Create a copy of the effect and add activeSpellId
-          local effectWithId = {
-            activeSpellId = activeSpellId,
-            id = effect.id,
-            name = effect.name,
-            index = effect.index,
-            minMagnitude = effect.minMagnitude,
-            maxMagnitude = effect.maxMagnitude,
-            duration = effect.duration,
-            durationLeft = effect.durationLeft,
-            magnitudeThisFrame = effect.magnitudeThisFrame,
-            affectedSkill = effect.affectedSkill,
-            affectedAttribute = effect.affectedAttribute,
-            icon = magRecs[effect.id].icon,
-            parentSpellName = spells.name
-          }
-          local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
-          fxKey[uniqueKey] = true -- Add the unique Effecet as a key to the fxKey table
-          table.insert(fxTable, effectWithId)
+
+        local customEffects = API.interface.getCustomEffects(spells)
+        if (customEffects) then
+            -- If any registered custom effects for this spell
+            for _, effect in ipairs(customEffects) do
+                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
+                table.insert(fxTable, effect)
+            end
+        else
+            -- Otherwise use default effect
+            for _, effect in pairs(spells.effects) do
+                -- Create a copy of the effect and add activeSpellId
+                local effectWithId = {
+                    activeSpellId = activeSpellId,
+                    id = effect.id,
+                    name = effect.name,
+                    index = effect.index,
+                    minMagnitude = effect.minMagnitude,
+                    maxMagnitude = effect.maxMagnitude,
+                    duration = effect.duration,
+                    durationLeft = effect.durationLeft,
+                    magnitudeThisFrame = effect.magnitudeThisFrame,
+                    affectedSkill = effect.affectedSkill,
+                    affectedAttribute = effect.affectedAttribute,
+                    icon = magRecs[effect.id].icon,
+                    parentSpellName = spells.name
+                }
+                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
+                table.insert(fxTable, effectWithId)
+            end
         end
-      end
+    end
     return fxTable
 end
 
@@ -703,7 +719,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             local fx_text
             local fx_icon
             local fx_timeRemain
-            local inText = common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
+            local inText = showMagnitude and common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
             if inText then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
                 magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-"..magnitudeStr or magnitudeStr
@@ -856,7 +872,10 @@ common.ui.toolTipBox = function(fxData,position)
     if not fxData then return end
     local fx = fxData
     TOOLTIP_ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id -- Update the tracked tooltip unique id
-    local inputText = fx.parentSpellName ..'\n'..fx.name.." "
+    local inputText = fx.parentSpellName ..'\n'
+    if fx.name then
+       inputText = inputText..fx.name..' '
+    end
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
 
     -- Check for fx.magnitudeThisFrame and concatenate
