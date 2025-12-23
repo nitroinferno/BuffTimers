@@ -72,7 +72,7 @@ I.Settings.registerGroup {
 	settings = {
 		setting("showMessages", "checkbox", {}, "Show Messages", showMessagesDescription, true),
 		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 35, min/max is: 1/100", 35),
-		setting("textScale", "inputText", {defaultValue = 1.0, max = 1.65, min = 0}, "Timer Text Size Scale", "Set the timer text Scaling. Default 1.0. Range 0.0 - 1.65", 1.0),
+		setting("textScale", "number", {defaultValue = 1.0, max = 1.65, min = 0}, "Timer Text Size Scale", "Set the timer text Scaling. Default 1.0. Range 0.0 - 1.65", 1.0),
 		setting("showBox","checkbox",{}, "Size & Positioning Mode (Buff/Debuff Box Borders)", sizeAndPosition,true),
 		setting("showMagnitude","checkbox",{}, "Show Magnitude", "Display alias text and a magnitude on top of the icon",true),
 		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
