@@ -92,11 +92,6 @@ local common = {
     },
     --need to store all debuff type effects
     debuffs = {
-        [magRecs[mgFx.AbsorbAttribute].id] = true,
-        [magRecs[mgFx.AbsorbFatigue].id] = true,
-        [magRecs[mgFx.AbsorbHealth].id] = true,
-        [magRecs[mgFx.AbsorbMagicka].id] = true,
-        [magRecs[mgFx.AbsorbSkill].id] = true,
         [magRecs[mgFx.Blind].id] = true,
         [magRecs[mgFx.Burden].id] = true,
         [magRecs[mgFx.CalmCreature].id] = true,
@@ -146,6 +141,11 @@ local common = {
         [magRecs[mgFx.WeaknessToShock].id] = true,
     },
     buffs = {
+        [magRecs[mgFx.AbsorbAttribute].id] = true,
+        [magRecs[mgFx.AbsorbFatigue].id] = true,
+        [magRecs[mgFx.AbsorbHealth].id] = true,
+        [magRecs[mgFx.AbsorbMagicka].id] = true,
+        [magRecs[mgFx.AbsorbSkill].id] = true,     
         [magRecs[mgFx.AlmsiviIntervention].id] = true,
         [magRecs[mgFx.BoundBattleAxe].id] = true,
         [magRecs[mgFx.BoundBoots].id] = true,
