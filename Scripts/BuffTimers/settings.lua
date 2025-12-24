@@ -85,6 +85,7 @@ I.Settings.registerGroup {
 		setting("rowLimit","inputText",{defaultValue = 15}, "Max number of debuffs or buffs per row", "Set the limit on how many buffs or debuffs to show per row. Default is 15, min/max is: 1/100", 15),
 		setting("buffLimit","inputText",{defaultValue = 100}, "Max number of debuffs or buffs to display", "Set the limit on how many buffs or debuffs can be shown. Default is 100, min/max is: 1/100", 100),
 		setting("radialSwipe","myToggle",{}, "Radial Swipe Options", "Radial swipe effect as time decreases: Shade / Unshade\nRequires Reload to take effect.", "Unshade"),
+		setting("timerOptions", "select", {l10n = modInfo.name, items = {"Bottom", "Mid", "Top"}}, "Timer Text Position Options.", "Which position to place Timer.", "Bottom"),
 	}
 }
 

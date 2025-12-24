@@ -20,6 +20,7 @@ local buffLimit = uiSettings:get("buffLimit")
 local rowLimit = uiSettings:get("rowLimit")
 local showMagnitude = uiSettings:get("showMagnitude")
 local textScale = uiSettings:get("textScale")
+local toption = uiSettings:get("timerOptions")
 
 --print("COLOR IS___________",timerColor)
 
@@ -39,7 +40,6 @@ local Aleft = ui.ALIGNMENT.Start
 local TOOLTIP = nil
 local TOOLTIP_ID = nil
 local fxKey = {}
-local showTimerOnIcon = true
 
 uiSettings:subscribe(async:callback(function(section, key)
     if key then
@@ -64,6 +64,8 @@ uiSettings:subscribe(async:callback(function(section, key)
             showMagnitude = uiSettings:get(key)
         elseif key == "textScale" then
             textScale = uiSettings:get(key)
+        elseif key == "timerOptions" then
+            toption = uiSettings:get(key)
         end
     end
 end))
@@ -763,13 +765,17 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             --local rootFlexWidget = common.ui.rootFlex({fx_text,fx_icon,fx_timeRemain}, {size = rootFlexSize, aSize = false},ID)
             local rootFlexWidget
             --local rootFlexWidget = common.ui.createImageWithText(45,fx.icon,timeText,fx.name,ID)
-            if showTimerOnIcon then
+            if toption == "Mid" then
                 fx_timeRemain.props.anchor = v2(0.5,0.5)
                 fx_timeRemain.props.relativePosition = v2(0.5,0.5)
                 fx_icon.content:add(fx_timeRemain)
                 rootFlexSize = common.calculateRootFlexSize({fx_text, fx_icon})
                 rootFlexWidget = common.ui.rootFlex({fx_text,fx_icon}, {size = rootFlexSize, aSize = false},ID)
-            else
+            elseif toption == "Top" then
+                fx_text.props.textAlignV = ui.ALIGNMENT.Start
+                rootFlexSize = common.calculateRootFlexSize({fx_text, fx_icon, fx_timeRemain})
+                rootFlexWidget = common.ui.rootFlex({fx_timeRemain,fx_icon,fx_text}, {size = rootFlexSize, aSize = false},ID)
+            elseif toption == "Bottom" then
                 rootFlexSize = common.calculateRootFlexSize({fx_text, fx_icon, fx_timeRemain})
                 rootFlexWidget = common.ui.rootFlex({fx_text,fx_icon,fx_timeRemain}, {size = rootFlexSize, aSize = false},ID)
                 --rootFlexWidget:add(fx_timeRemain)
