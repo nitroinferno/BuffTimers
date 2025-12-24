@@ -728,7 +728,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             local fx_text
             local fx_icon
             local fx_timeRemain
-            local inText = showMagnitude and common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
+            local inText = showMagnitude and (common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill]) or nil
             if inText then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
                 magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-"..magnitudeStr or magnitudeStr
