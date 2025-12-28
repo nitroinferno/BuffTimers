@@ -78,7 +78,7 @@ I.Settings.registerGroup {
 		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("debuffAlign","checkbox",{}, "Align deBuffs Left", "deBuffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
 		setting("splitBuffsDebuffs","checkbox",{}, "Split Buffs and Debuffs", "Enable to keep buffs and debuffs in separate movable containers, or turn off to combine them into a single list.", true),
-		setting("iconOptions", "select", {l10n = modInfo.name, items = {"1", "2", "3"}}, "Icon Effect Selection\n-NOT IMPLEMENTED YET-", iconOptions, "1"),
+		setting("iconOptions", "select", {l10n = modInfo.name, items = {"1", "2", "3"}}, "Icon Effect Selection", iconOptions, "1"),
 		setting("timerColor","color",{}, "Timer Text Color", "Text color for time countdown text", util.color.rgb(255, 255, 255)),
 		setting("detailTextColor","color",{}, "Buff Details Text Color", "Text color of skill, attribute and magnitude for buffs and debuffs ",util.color.hex('DFC99F')),
 		setting("iconPadding","checkbox",{}, "Pad Icons", "Put Padding around the buff Icons", true),

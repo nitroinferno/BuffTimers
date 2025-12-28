@@ -117,7 +117,7 @@ local function d_message(msg)
 end
 
 local fadingOut = true
-local alpha = 0.5 -- initial alpha 50%
+local alpha = 1 -- initial alpha 50%
 --d_message("Initial Alpha: " .. alpha)
 
 
@@ -442,7 +442,7 @@ local function updateUI_Element()
         }
     end
 
-    updateAlpha()
+    if iconOptions ~= '3' then updateAlpha() end
 
     local tooltipData = com.getTooltip()
     local rootNameTT = tooltipData and tooltipData.layout.userdata.origin.name --name of the root layout
@@ -600,6 +600,9 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
             rebuildAllEffectGroups()
         elseif key == "iconOptions" then
             iconOptions = userInterfaceSettings:get(key)
+            if iconOptions == '3' then
+                alpha = 1
+            end
         elseif key == "timerColor" then
             timerColor = userInterfaceSettings:get(key)
         elseif key == "detailTextColor" then

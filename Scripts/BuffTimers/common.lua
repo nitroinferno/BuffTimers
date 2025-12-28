@@ -384,6 +384,7 @@ common.formatDuration = function(timeRemaining)
         time = time .. 's'
     else
         time = util.round(time * 10) / 10  -- Round to one decimal place
+        time = math.max(0, time) -- Ensure time is not negative 
         time = string.format("%.1fs", time) -- Format to ensure one decimal place
     end
 
@@ -753,7 +754,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 fx_text = common.ui.makeTextContent("",sizeTable)
             end
             fx_icon = common.ui.makeIconContent(fx.icon,{size = iconSize or 30})
-            fx_icon.content:add(shader.Overlay(shader.radialWipe(fx),iconSize))
+            if iconOptions ~= '2' then fx_icon.content:add(shader.Overlay(shader.radialWipe(fx),iconSize)) end
             local timeArgs = {color = timerColor, h = Amid, tSize = ttxtSz+1 or 10, size ={x= iconSize or 30,y=iconSize and ttxtSz+1 or 10}}
             fx_timeRemain =  common.ui.makeTextContent(timeText, timeArgs)
 
