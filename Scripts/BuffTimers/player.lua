@@ -46,7 +46,7 @@ local yRes = ui.screenSize().y
 
 local debug = true
 local timer = nil
-local showMessages = userInterfaceSettings:get("showMessages")
+local showTimedOnly = userInterfaceSettings:get("showTimedOnly")
 local iconSize = userInterfaceSettings:get("iconScaling")
 local showBox = userInterfaceSettings:get("showBox")
 local buffAlign = userInterfaceSettings:get("buffAlign")
@@ -296,11 +296,13 @@ local function createEffectGroup(def)
 end
 
 local function getActiveEffectGroups()
-    if splitBuffsDebuffs then
+    local filterBuff = showTimedOnly and com.fltBuffTimers
+    local filtTime = showTimedOnly and com.fltTimeFx
+	if splitBuffsDebuffs then
         return {
             createEffectGroup {
                 key = "buffs",
-                filter = com.fltBuffTimers,
+                filter = filterBuff,
                 align = buffAlign,
                 positionKey = "buffPos",
             },
@@ -318,7 +320,7 @@ local function getActiveEffectGroups()
     return {
         createEffectGroup {
             key = "combined",
-            filter = nil,
+            filter = filtTime,
             align = buffAlign,
             positionKey = "buffPos",
         },
@@ -582,8 +584,9 @@ startUpdating()
 userInterfaceSettings:subscribe(async:callback(function(section, key)
     if key then
         print('Value is changed:', key, '=', userInterfaceSettings:get(key))
-        if key == "showMessages" then
-            showMessages = userInterfaceSettings:get(key)
+        if key == "showTimedOnly" then
+            showTimedOnly = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
         elseif key == "iconScaling" then
             iconSize = userInterfaceSettings:get(key)
         elseif key == "showBox" then
@@ -613,6 +616,14 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
             rowLimit = userInterfaceSettings:get(key)
         elseif key == "buffLimit" then
             buffLimit = userInterfaceSettings:get(key)
+        elseif key == "showMagnitude" then
+            rebuildAllEffectGroups()
+        elseif key == "textScale" then
+            rebuildAllEffectGroups()
+        elseif key == "timerOptions" then
+            rebuildAllEffectGroups()
+        elseif key == "radialSwipe" then
+            rebuildAllEffectGroups()
         end
     else
         print('All values are changed')

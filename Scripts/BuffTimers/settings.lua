@@ -21,7 +21,7 @@ local modInfo = require("Scripts.BuffTimers.modInfo")
 local pageDescription = "By Nitro\nv" .. modInfo.version .. "\n\nBuff Timers\n\nThis mod shows all buffs or debuffs with timers and optional dynamic visual effects."
 .."\n\nYou can click and drag both buff or debuff windows to any location on the HUD.\n\nFor Buff/Debuff HUD Positions:\n    Press '=' key to Save\n    Press '-' key to Reset"
 local modEnableDescription = "This enables the mod or disables it."
-local showMessagesDescription = "Enables UI messages to be shown for any cases which require it. (Currently none)"
+local showTimedBuffsDescription = "Show only buffs/debuffs that have timers. When disabled all buffs/debuffs are shown."
 local iconOptions = "Select which options you want for the icons the following options are available: \n 1. All (contains all below)\n 2. Icon Pulse on low time\n 3. Radial Swipe"
 local sizeAndPosition = "Enable this to show the area box where buff icons will be rendered. When enabled allows click + drag on buff/debuff regions for repositioning." 
 .."\n\nMouse Release saves the position, press '-' key to reset to default position."
@@ -70,7 +70,7 @@ I.Settings.registerGroup {
 	name = "UI",
 	permanentStorage = false,
 	settings = {
-		setting("showMessages", "checkbox", {}, "Show Messages", showMessagesDescription, true),
+		setting("showTimedOnly", "checkbox", {}, "Show Only Timed Buffs", showTimedBuffsDescription, true),
 		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 35, min/max is: 1/100", 35),
 		setting("textScale", "number", {defaultValue = 1.0, max = 1.65, min = 0}, "Timer Text Size Scale", "Set the timer text Scaling. Default 1.0. Range 0.0 - 1.65", 1.0),
 		setting("showBox","checkbox",{}, "Size & Positioning Mode (Buff/Debuff Box Borders)", sizeAndPosition,true),
