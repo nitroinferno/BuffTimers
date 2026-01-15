@@ -58,7 +58,7 @@ end
 -- Set the scale of the icons by checking for changes in the UI settings. 
 userInterfaceSettings:subscribe(async:callback(function(section, key)
     if key then
-        print('Value is changed:', key, '=', userInterfaceSettings:get(key))
+        --print('Value is changed:', key, '=', userInterfaceSettings:get(key))
         if key == "radialSwipe" then
             swipeOpt = userInterfaceSettings:get("radialSwipe")
         end

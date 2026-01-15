@@ -43,7 +43,7 @@ local fxKey = {}
 
 uiSettings:subscribe(async:callback(function(section, key)
     if key then
-        print('Value is changed:', key, '=', uiSettings:get(key))
+        --print('Value is changed:', key, '=', uiSettings:get(key))
         if key == "iconOptions" then
             iconOptions = uiSettings:get(key)
         elseif key == "timerColor" then
@@ -674,12 +674,12 @@ common.calculateRootFlexSize = function(children)
 end
 
 -- New stuff 9-22-2024
-common.ui.createElementContainer = function(inputContent, pos)
+common.ui.createElementContainer = function(inputContent, pos, layer)
     -- Consider adding: props = {size= v2(200,200)} to the table as default
     -- Perhaps check if its length if table size is zero
     if not inputContent then inputContent = {} end -- Need to handle default state if input content is nil.
     local element = ui.create {
-		layer = 'Effects_Layer', -- changed to custom layer
+		layer = layer or 'Effects_Layer', -- changed to custom layer
 		template = I.MWUI.templates.boxTransparent,
         name = 'MainBuffBoundary',
 		props = {

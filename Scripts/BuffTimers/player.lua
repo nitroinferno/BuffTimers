@@ -44,8 +44,9 @@ local uiPositions = storage.playerSection("UI_positions") --added late
 local xRes = ui.screenSize().x
 local yRes = ui.screenSize().y
 
-local debug = true
+local debug = false
 local timer = nil
+local chargenFinishedFlag = false
 local showTimedOnly = userInterfaceSettings:get("showTimedOnly")
 local iconSize = userInterfaceSettings:get("iconScaling")
 local showBox = userInterfaceSettings:get("showBox")
@@ -132,7 +133,7 @@ local function d_print(fname, msg)
 		msg = "\x1b[35mnil"
 	end
 
-	print("\n\t\x1b[33;3m" .. tostring(fname) .. "\n\t\t\x1b[33;3m" .. tostring(msg) .. "\n\x1b[39m")
+	print("\n\t\x1b[92;3m" .. tostring(fname) .. "\n\t\t\x1b[33;3m" .. tostring(msg) .. "\n\x1b[39m")
 end
 
 local function reverseTable(t)
@@ -157,6 +158,28 @@ local function updateAlpha()
             fadingOut = true
         end
     end
+end
+
+local function chargenFinished()
+	if chargenFinishedFlag then
+		return true
+	end
+	if types.Player.getBirthSign(self) ~= "" then
+        chargenFinishedFlag = true
+		return true
+	end
+	if types.Player.isCharGenFinished(self) then
+        chargenFinishedFlag = true
+		return true
+	end
+	-- local playerItems = types.Container.inventory(self):getAll()
+	-- for a,b in pairs(playerItems) do
+	-- 	if b.recordId == "chargen statssheet" then
+    --         chargenFinishedFlag = true
+	-- 		return true
+	-- 	end
+	-- end
+	return false
 end
 
 -- Function to calculate size based on iconSize without children content
@@ -296,7 +319,7 @@ local function createEffectGroup(def)
 end
 
 local function getActiveEffectGroups()
-    local filterBuff = showTimedOnly and com.fltBuffTimers
+    local filterBuff = showTimedOnly and com.fltBuffTimers or com.fltBuffs
     local filtTime = showTimedOnly and com.fltTimeFx
 	if splitBuffsDebuffs then
         return {
@@ -347,8 +370,10 @@ local function buildEffectGroup(def)
     local rows = com.flexWrapper(rootLayouts, { iconsPerRow = rowLimit, Alignment = getAlignment(def.align) })
     local flex = com.ui.createFlex(rows, false)
     updateFlexWrapProps(flex, rows)
-    local element = com.ui.createElementContainer(flex)
+     d_print("buildEffectGroup()","Printing showBox var:".. tostring(showBox))
+    local element = com.ui.createElementContainer(flex, nil, showBox and 'Modal') -- create element define layer (Modal to display on topmost layer)
     element.layout.userData.positionKey = def.positionKey -- Store a unique ID for buffPos or debuffPos
+    d_print("buildEffectGroup()", "Printing layer"..element.layout.layer)
 
     local positions = buffPositions or getStoredPositions()
     element.layout.props.position = (positions and positions[def.positionKey]) or v2(0, 0)
@@ -458,7 +483,7 @@ end
 
 local function rebuildAllEffectGroups()
     initLayouts(getBoxSetting)
-    updateUI_Element()
+    --updateUI_Element()
 end
 
 local buffElement = {}
@@ -539,13 +564,31 @@ local function onUpdate(dt)
     end
 end
 
+local MaxThreshold, CurrentThreshold = 5.0, 0.0
 local function onFrame(dt)
-    if dt ~= 0 or wasPaused == true then return end --indicates not paused
-    wasPaused = true -- Set pause toggle
-
-    if wasPaused then
-        --print("Game paused!")
+    if not enable then return end
+    local duration = core.getRealFrameDuration()
+    CurrentThreshold = CurrentThreshold + duration
+    if CurrentThreshold < MaxThreshold then
+        return
+    else
+        CurrentThreshold = 0
     end
+
+    if chargenFinishedFlag == false then
+        --print("Chargen not finished yet checking...")
+        if types.Player.isCharGenFinished(self) and showBox == false then
+            userInterfaceSettings:set("showBox", true)
+        end
+        return
+    end
+
+    -- if dt ~= 0 or wasPaused == true then return end --indicates not paused
+    -- wasPaused = true -- Set pause toggle
+
+    -- if wasPaused then
+    --     --print("Game paused!")
+    -- end
 
 end
 
@@ -574,7 +617,7 @@ local function onSave()
 end
 
 local function onLoad()
-
+    chargenFinishedFlag = chargenFinished()
 end
 
 startUpdating()
@@ -583,7 +626,7 @@ startUpdating()
 -- Set the scale of the icons by checking for changes in the UI settings. 
 userInterfaceSettings:subscribe(async:callback(function(section, key)
     if key then
-        print('Value is changed:', key, '=', userInterfaceSettings:get(key))
+        --print('Value is changed:', key, '=', userInterfaceSettings:get(key))
         if key == "showTimedOnly" then
             showTimedOnly = userInterfaceSettings:get(key)
             rebuildAllEffectGroups()
@@ -657,6 +700,15 @@ return {
         onSave = onSave,
         onLoad = onLoad,
         onFrame = onFrame,
+        onInit = function()
+            if chargenFinished() then
+                chargenFinishedFlag = true
+            else
+                chargenFinishedFlag = false
+                userInterfaceSettings:set("showBox", false)
+            end
+            --print("onInit... CharGen State:", tostring(chargenFinishedFlag))
+        end,
     },
     eventHandlers = {
         UiModeChanged = function(data)
