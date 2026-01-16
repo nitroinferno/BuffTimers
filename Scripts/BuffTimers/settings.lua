@@ -93,7 +93,7 @@ I.Settings.registerGroup {
 		setting("iconPadding","checkbox",{}, l10n("iconPad"), l10n("iconPadDescription"), true),
 		setting("rowLimit","inputText",{defaultValue = 15}, l10n("maxPerRow"), l10n("maxPerRowDescription"), 15),
 		setting("buffLimit","inputText",{defaultValue = 100}, l10n("maxTotalIcon"), l10n("maxTotalIconDescriptio"), 100),
-		setting("radialSwipe","myToggle",{l10n = modInfo.name, trueLabel = 'UnShade', falseLabel = 'Shade'}, l10n("radialOptions"), l10n("radialOptionsDescription"), true),
+		setting("radialSwipe","checkbox",{l10n = modInfo.name, trueLabel = 'UnShade', falseLabel = 'Shade'}, l10n("radialOptions"), l10n("radialOptionsDescription"), true),
 		setting("timerOptions", "select", {l10n = modInfo.name, items = {"Bottom", "Mid", "Top"}}, l10n("textPosOption"), l10n("textPosOptionDescription"), "Bottom"),
 	}
 }

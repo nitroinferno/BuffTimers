@@ -13,7 +13,7 @@ local swipeOpt = userInterfaceSettings:get("radialSwipe")
 shader.radialWipe = function(fx)
     if not fx then return end
     if not fx.duration or fx.durationLeft <= 0 then return end
-    local myAtlas = (swipeOpt == "Unshade") and 'textures/radial/partial.png' or 'textures/radial/partial_invert.png' -- a 4096x4096 atlas
+    local myAtlas = (swipeOpt == true) and 'textures/radial/partial.png' or 'textures/radial/partial_invert.png' -- a 4096x4096 atlas
     local offset = 204 -- each square is 204 x 204
     local durL = fx.durationLeft
     local dur = fx.duration
