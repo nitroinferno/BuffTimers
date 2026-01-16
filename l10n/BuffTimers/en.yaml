@@ -1,2 +1,86 @@
-up: Mouse Wheel Up
-down: Mouse Wheel Down
+# General / page text
+pageDescription: |-
+  By Nitro
+  v{version}
+
+  Buff Timers
+
+  This mod shows all buffs or debuffs with timers and optional dynamic visual effects.
+
+  You can click and drag both buff or debuff windows to any location on the HUD.
+
+  For Buff/Debuff HUD Positions:
+      Press '=' key to Save
+      Press '-' key to Reset
+
+modEnableDescription: "This enables the mod or disables it."
+
+# Setting labels
+show_timed: "Show Only Timed Buffs"
+buffScaling: "Icon and Text Size"
+textScaling: "Timer Text Size Scale"
+posModeText: "Size & Positioning Mode (Buff/Debuff Box Borders)"
+showMag: "Show Magnitude"
+buffAlign: "Align Buffs Left"
+debuffAlign: "Align Debuffs Left"
+splitOption: "Split Buffs and Debuffs"
+fxSelection: "Icon Effect Selection"
+timeColor: "Timer Text Color"
+detailsColor: "Buff Details Text Color"
+iconPad: "Pad Icons"
+maxPerRow: "Max number of debuffs or buffs per row"
+maxTotalIcon: "Max number of debuffs or buffs to display"
+radialOptions: "Radial Swipe Options"
+textPosOption: "Timer Text Position Options"
+
+# Setting descriptions
+showTimedBuffsDescription: "Show only buffs/debuffs that have timers. When disabled all buffs/debuffs are shown."
+
+buffScalingDescription: "Set the icon size in pixels. Default is 35, min/max is: 1/100"
+textScalingDescription: "Set the timer text scaling. Default 1.0. Range 0.0 - 1.65"
+
+sizeAndPositionDescription: |-
+  Enable this to show the area box where buff icons will be rendered. When enabled allows click + drag on buff/debuff regions for repositioning.
+
+  Mouse Release saves the position, press '-' key to reset to default position.
+
+showMagDescription: "Display alias text and a magnitude on top of the icon"
+buffAlignDescription: "Buffs fill in each row from the left. If turned off buffs will align on the right hand side"
+debuffAlignDescription: "Debuffs fill in each row from the left. If turned off debuffs will align on the right hand side"
+splitOptionDescription: "Enable to keep buffs and debuffs in separate movable containers, or turn off to combine them into a single list."
+
+iconOptionsDescription: |-
+  Select which options you want for the icons. The following options are available:
+   1. All (contains all below)
+   2. Icon Pulse on low time
+   3. Radial Swipe
+
+timeColorDescription: "Text color for time countdown text"
+detailsColorDescription: "Text color of skill, attribute and magnitude for buffs and debuffs"
+iconPadDescription: "Put padding around the buff icons"
+
+maxPerRowDescription: "Set the limit on how many buffs or debuffs to show per row. Default is 15, min/max is: 1/100"
+maxTotalIconDescription: "Set the limit on how many buffs or debuffs can be shown. Default is 100, min/max is: 1/100"
+
+radialOptionsDescription: |-
+  Radial swipe effect as time decreases: Shade / Unshade
+  Requires reload to take effect.
+
+textPosOptionDescription: "Which position to place Timer."
+
+# Select item labels (these are the values in `items = {...}`)
+iconFx_all: "All"
+iconFx_pulse: "Icon Pulse on low time"
+iconFx_radial: "Radial Swipe"
+
+Bottom: "Bottom"
+Mid: "Mid"
+Top: "Top"
+
+# If your toggle needs localized display strings too
+Shade: "BLAHHHHHHHHH"
+Unshade: "Unshade"
+
+# (Optional) other misc keys you started
+up: "Mouse Wheel Up"
+down: "Mouse Wheel Down"

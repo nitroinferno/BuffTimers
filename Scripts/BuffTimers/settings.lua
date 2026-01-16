@@ -13,18 +13,27 @@ local I = require("openmw.interfaces")
 local input = require("openmw.input")
 local ui = require("openmw.ui")
 local util = require('openmw.util')
+local core = require("openmw.core")
 
 --local color = util.color
 
 local modInfo = require("Scripts.BuffTimers.modInfo")
+local l10n = core.l10n(modInfo.name)
 
-local pageDescription = "By Nitro\nv" .. modInfo.version .. "\n\nBuff Timers\n\nThis mod shows all buffs or debuffs with timers and optional dynamic visual effects."
-.."\n\nYou can click and drag both buff or debuff windows to any location on the HUD.\n\nFor Buff/Debuff HUD Positions:\n    Press '=' key to Save\n    Press '-' key to Reset"
-local modEnableDescription = "This enables the mod or disables it."
-local showTimedBuffsDescription = "Show only buffs/debuffs that have timers. When disabled all buffs/debuffs are shown."
-local iconOptions = "Select which options you want for the icons the following options are available: \n 1. All (contains all below)\n 2. Icon Pulse on low time\n 3. Radial Swipe"
-local sizeAndPosition = "Enable this to show the area box where buff icons will be rendered. When enabled allows click + drag on buff/debuff regions for repositioning." 
-.."\n\nMouse Release saves the position, press '-' key to reset to default position."
+-- local pageDescription = "By Nitro\nv" .. modInfo.version .. "\n\nBuff Timers\n\nThis mod shows all buffs or debuffs with timers and optional dynamic visual effects."
+-- .."\n\nYou can click and drag both buff or debuff windows to any location on the HUD.\n\nFor Buff/Debuff HUD Positions:\n    Press '=' key to Save\n    Press '-' key to Reset"
+-- local modEnableDescription = "This enables the mod or disables it."
+-- local showTimedBuffsDescription = "Show only buffs/debuffs that have timers. When disabled all buffs/debuffs are shown."
+-- local iconOptions = "Select which options you want for the icons the following options are available: \n 1. All (contains all below)\n 2. Icon Pulse on low time\n 3. Radial Swipe"
+-- local sizeAndPosition = "Enable this to show the area box where buff icons will be rendered. When enabled allows click + drag on buff/debuff regions for repositioning." 
+-- .."\n\nMouse Release saves the position, press '-' key to reset to default position."
+
+local pageDescription = l10n("pageDescription", { version = modInfo.version })
+local modEnableDescription = l10n("modEnableDescription")
+local showTimedBuffsDescription = l10n("showTimedBuffsDescription")
+local iconOptions = l10n("iconOptionsDescription")
+local sizeAndPosition = l10n("sizeAndPositionDescription")
+
 
 local menuParams = {
 	const = {
@@ -70,22 +79,22 @@ I.Settings.registerGroup {
 	name = "UI",
 	permanentStorage = false,
 	settings = {
-		setting("showTimedOnly", "checkbox", {}, "Show Only Timed Buffs", showTimedBuffsDescription, true),
-		setting("iconScaling", "inputText", {defaultValue = 35}, "Icon and Text Size", "Set the icon size in pixels. Default is 35, min/max is: 1/100", 35),
-		setting("textScale", "number", {defaultValue = 1.0, max = 1.65, min = 0}, "Timer Text Size Scale", "Set the timer text Scaling. Default 1.0. Range 0.0 - 1.65", 1.0),
-		setting("showBox","checkbox",{}, "Size & Positioning Mode (Buff/Debuff Box Borders)", sizeAndPosition,true),
-		setting("showMagnitude","checkbox",{}, "Show Magnitude", "Display alias text and a magnitude on top of the icon",true),
-		setting("buffAlign","checkbox",{}, "Align Buffs Left", "Buffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
-		setting("debuffAlign","checkbox",{}, "Align deBuffs Left", "deBuffs fill in each row from the left. If turned off buffs will align on the right hand side",true),
-		setting("splitBuffsDebuffs","checkbox",{}, "Split Buffs and Debuffs", "Enable to keep buffs and debuffs in separate movable containers, or turn off to combine them into a single list.", true),
-		setting("iconOptions", "select", {l10n = modInfo.name, items = {"1", "2", "3"}}, "Icon Effect Selection", iconOptions, "1"),
-		setting("timerColor","color",{}, "Timer Text Color", "Text color for time countdown text", util.color.rgb(255, 255, 255)),
-		setting("detailTextColor","color",{}, "Buff Details Text Color", "Text color of skill, attribute and magnitude for buffs and debuffs ",util.color.hex('DFC99F')),
-		setting("iconPadding","checkbox",{}, "Pad Icons", "Put Padding around the buff Icons", true),
-		setting("rowLimit","inputText",{defaultValue = 15}, "Max number of debuffs or buffs per row", "Set the limit on how many buffs or debuffs to show per row. Default is 15, min/max is: 1/100", 15),
-		setting("buffLimit","inputText",{defaultValue = 100}, "Max number of debuffs or buffs to display", "Set the limit on how many buffs or debuffs can be shown. Default is 100, min/max is: 1/100", 100),
-		setting("radialSwipe","myToggle",{}, "Radial Swipe Options", "Radial swipe effect as time decreases: Shade / Unshade\nRequires Reload to take effect.", "Unshade"),
-		setting("timerOptions", "select", {l10n = modInfo.name, items = {"Bottom", "Mid", "Top"}}, "Timer Text Position Options.", "Which position to place Timer.", "Bottom"),
+		setting("showTimedOnly", "checkbox", {}, l10n("show_timed"), showTimedBuffsDescription, true),
+		setting("iconScaling", "inputText", {defaultValue = 35}, l10n("buffScaling"), l10n("buffScalingDescription"), 35),
+		setting("textScale", "number", {defaultValue = 1.0, max = 1.65, min = 0}, l10n("textScaling"), l10n("textScalingDescription"), 1.0),
+		setting("showBox","checkbox",{}, l10n("posModeTex"), sizeAndPosition,true),
+		setting("showMagnitude","checkbox",{}, l10n("showMag"), l10n("showMagDescription"),true),
+		setting("buffAlign","checkbox",{}, l10n("buffAlign"), l10n("buffAlignDescription"),true),
+		setting("debuffAlign","checkbox",{}, l10n("debuffAlign"), l10n("debuffAlignDescription"),true),
+		setting("splitBuffsDebuffs","checkbox",{}, l10n("splitOption"), l10n("splitOptionDescription"), true),
+		setting("iconOptions", "select", {l10n = modInfo.name, items = {"1", "2", "3"}}, l10n("fxSelection"), iconOptions, "1"),
+		setting("timerColor","color",{}, l10n("timeColor"), l10n("timeColorDescription"), util.color.rgb(255, 255, 255)),
+		setting("detailTextColor","color",{}, l10n("detailsColor"), l10n("detailsColorDescription"),util.color.hex('DFC99F')),
+		setting("iconPadding","checkbox",{}, l10n("iconPad"), l10n("iconPadDescription"), true),
+		setting("rowLimit","inputText",{defaultValue = 15}, l10n("maxPerRow"), l10n("maxPerRowDescription"), 15),
+		setting("buffLimit","inputText",{defaultValue = 100}, l10n("maxTotalIcon"), l10n("maxTotalIconDescriptio"), 100),
+		setting("radialSwipe","myToggle",{l10n = modInfo.name, trueLabel = 'UnShade', falseLabel = 'Shade'}, l10n("radialOptions"), l10n("radialOptionsDescription"), true),
+		setting("timerOptions", "select", {l10n = modInfo.name, items = {"Bottom", "Mid", "Top"}}, l10n("textPosOption"), l10n("textPosOptionDescription"), "Bottom"),
 	}
 }
 
