@@ -25,7 +25,7 @@ local showMagnitude = uiSettings:get("showMagnitude")
 local templates = I.MWUI.templates
 local v2 = util.vector2
 local color = util.color
-local borderV = v2(1,1) * 3
+local borderV = v2(1, 1) * 3
 local magRecs = core.magic.effects.records
 local mgFx = core.magic.EFFECT_TYPE
 local Actor = types.Actor
@@ -68,24 +68,24 @@ local function setTooltipOffset(position)
     local toolTipOffsetX
     local toolTipOffsetY
     --print()
-    if (position.x/ui.layers[5].size.x) >= 0.5 then -- Indiactes mouse is on left hand side
+    if (position.x / ui.layers[5].size.x) >= 0.5 then -- Indiactes mouse is on left hand side
         toolTipOffsetX = 1
     else
         toolTipOffsetX = 0
     end
 
-    if (position.y/ui.layers[5].size.y) > 0.90 then
+    if (position.y / ui.layers[5].size.y) > 0.90 then
         toolTipOffsetY = 1
     else
         toolTipOffsetY = -0.4
     end
     -- print(v2(toolTipOffsetX,toolTipOffsetY)) -- for Debugging
-	return v2(toolTipOffsetX,toolTipOffsetY)
+    return v2(toolTipOffsetX, toolTipOffsetY)
 end
 
 local common = {
     const = {
-      CHAR_ROTATE_SPEED = 0.3,
+        CHAR_ROTATE_SPEED = 0.3,
     },
     --need to store all debuff type effects
     debuffs = {
@@ -258,40 +258,40 @@ local common = {
         ['willpower'] = 'WPWR',
     },
     skillAlias = {
-        ['acrobatics']= 'ACRB',
-        ['alchemy']= 'ALCH',
-        ['alteration']= 'ALTR',
-        ['armorer']= 'RPAIR',
-        ['athletics']= 'ATHL',
-        ['axe']= 'AXE',
-        ['block']= 'BLCK',
-        ['bluntWeapon']= 'BLNT',
-        ['conjuration']= 'CONJ',
-        ['destruction']= 'DEST',
-        ['enchant']= 'ENCH',
-        ['hand-to-hand']= 'FIST',
-        ['heavyarmor']= 'ARMH',
-        ['illusion']= 'ILLU',
-        ['lightarmor']= 'ARML',
-        ['longblade']= 'LBLD',
-        ['marksman']= 'BOW',
-        ['mediumarmor']= 'ARMM',
-        ['mercantile']= 'MERC',
-        ['mysticism']= 'MYST',
-        ['restoration']= 'REST',
-        ['security']= 'SEC',
-        ['short Blade']= 'SBLD',
-        ['sneak']= 'SNK',
-        ['spear']= 'SPR',
-        ['speechcraft']= 'SPCH',
-        ['unarmored']= 'UNAR',
+        ['acrobatics'] = 'ACRB',
+        ['alchemy'] = 'ALCH',
+        ['alteration'] = 'ALTR',
+        ['armorer'] = 'RPAIR',
+        ['athletics'] = 'ATHL',
+        ['axe'] = 'AXE',
+        ['block'] = 'BLCK',
+        ['bluntWeapon'] = 'BLNT',
+        ['conjuration'] = 'CONJ',
+        ['destruction'] = 'DEST',
+        ['enchant'] = 'ENCH',
+        ['hand-to-hand'] = 'FIST',
+        ['heavyarmor'] = 'ARMH',
+        ['illusion'] = 'ILLU',
+        ['lightarmor'] = 'ARML',
+        ['longblade'] = 'LBLD',
+        ['marksman'] = 'BOW',
+        ['mediumarmor'] = 'ARMM',
+        ['mercantile'] = 'MERC',
+        ['mysticism'] = 'MYST',
+        ['restoration'] = 'REST',
+        ['security'] = 'SEC',
+        ['short Blade'] = 'SBLD',
+        ['sneak'] = 'SNK',
+        ['spear'] = 'SPR',
+        ['speechcraft'] = 'SPCH',
+        ['unarmored'] = 'UNAR',
     },
     ui = {},
 }
 
 --simple table copy function
-common.clone = function(org) 
-    return {table.unpack(org)}
+common.clone = function(org)
+    return { table.unpack(org) }
 end
 
 common.checkGetSize = function(args)
@@ -308,57 +308,57 @@ common.checkGetSize = function(args)
         end
     else
         -- Default size if args.size is nil
-        rtsize = v2(24,10)
+        rtsize = v2(24, 10)
     end
     return rtsize
 end
 
 common.ui.customPadding = function(templates)
-  templates.padding = {
-    type = ui.TYPE.Container,
-    content = ui.content {
-        {
-            props = {
-                size = borderV,
-                color = color.hex('FFFFFF'),
+    templates.padding = {
+        type = ui.TYPE.Container,
+        content = ui.content {
+            {
+                props = {
+                    size = borderV,
+                    color = color.hex('FFFFFF'),
+                },
             },
-        },
-        {
-            external = { slot = true },
-            props = {
-                position = borderV,
-                relativeSize = util.vector2(1, 1),
+            {
+                external = { slot = true },
+                props = {
+                    position = borderV,
+                    relativeSize = util.vector2(1, 1),
+                },
             },
-        },
-        {
-            props = {
-                position = borderV,
-                relativePosition = util.vector2(1, 1),
-                size = borderV,
+            {
+                props = {
+                    position = borderV,
+                    relativePosition = util.vector2(1, 1),
+                    size = borderV,
+                },
             },
+        }
+    }
+    templates.interval = {
+        type = ui.TYPE.Widget,
+        props = {
+            size = borderV,
         },
     }
-}
-templates.interval = {
-    type = ui.TYPE.Widget,
-    props = {
-        size = borderV,
-    },
-}
 end
 
 --Need to add dynamic names as keys, such as the name of the spell effect
 common.ui.createPaddedContent = function(size, imagePath, text, effectname, key)
-  local IconWithText = common.ui.createImageWithText(size or 20, imagePath, text, effectname, key)
-  local myTemplate = {}
-  common.ui.customPadding(myTemplate)
-	--local myImage = createImage(size or 20, imagePath)
-	return {
-            name = key and 'padded_' .. key or 'padded',
-            template = myTemplate.padding,
-            content = ui.content {
-                IconWithText
-            }
+    local IconWithText = common.ui.createImageWithText(size or 20, imagePath, text, effectname, key)
+    local myTemplate = {}
+    common.ui.customPadding(myTemplate)
+    --local myImage = createImage(size or 20, imagePath)
+    return {
+        name = key and 'padded_' .. key or 'padded',
+        template = myTemplate.padding,
+        content = ui.content {
+            IconWithText
+        }
     }
 end
 
@@ -368,16 +368,16 @@ common.formatDuration = function(timeRemaining)
     if not timeRemaining or type(timeRemaining) ~= 'number' then return end
     local time = timeRemaining
     if time > 3600 then
-        time = util.round(time/3600)
+        time = util.round(time / 3600)
         time = time .. 'h'
     elseif time > 60 then
-        time = util.round(time/60)
+        time = util.round(time / 60)
         time = time .. 'm'
     elseif time > 10 then
         time = util.round(time)
         time = time .. 's'
     else
-        time = util.round(time * 10) / 10  -- Round to one decimal place
+        time = util.round(time * 10) / 10   -- Round to one decimal place
         time = string.format("%.1fs", time) -- Format to ensure one decimal place
     end
 
@@ -396,7 +396,7 @@ common.createFxTable = function(spellList)
         if (customEffects) then
             -- If any registered custom effects for this spell
             for _, effect in ipairs(customEffects) do
-                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                local uniqueKey = activeSpellId .. '/' .. effect.index .. '/' .. effect.id
                 fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
                 table.insert(fxTable, effect)
             end
@@ -419,7 +419,7 @@ common.createFxTable = function(spellList)
                     icon = magRecs[effect.id].icon,
                     parentSpellName = spells.name
                 }
-                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                local uniqueKey = activeSpellId .. '/' .. effect.index .. '/' .. effect.id
                 fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
                 table.insert(fxTable, effectWithId)
             end
@@ -429,53 +429,53 @@ common.createFxTable = function(spellList)
 end
 
 -- New stuff 9-24-2024
--- @param args.color openmw_util.color.rgba(r,b,g,a): 
+-- @param args.color openmw_util.color.rgba(r,b,g,a):
 common.ui.makeTextContent = function(inputText, args)
-    args = args or {}  -- Initialize args to an empty table if nil
+    args = args or {} -- Initialize args to an empty table if nil
     --local sz = (args and args.size) and args.size or 24
     local sz = common.checkGetSize(args)
     local textWidget = {
-		name = inputText and 'textWidget/'..inputText or (args and args.id) and 'textWidget/'..'blank/'..args.id,
-		type = ui.TYPE.Text,
-		props = {
-			text = inputText or "",
-			size = sz, -- Text block size
-			textAlignH = args.h or Aleft, -- does nothing??
-			textAlignV = args.v or Aright,
-			inheritAlpha = false,
-			--position = v2(40,10),
-			textColor = args and args.color or color.hex('FFFFFF'),
-			textSize = args.tSize or 10,
-			autoSize = args.aSize or false,
-            multiline = true,   -- Enable multiline
-            wordWrap = true,    -- Enable word wrap
-		},
-	}
-	return textWidget
+        name = inputText and 'textWidget/' .. inputText or (args and args.id) and 'textWidget/' .. 'blank/' .. args.id,
+        type = ui.TYPE.Text,
+        props = {
+            text = inputText or "",
+            size = sz,           -- Text block size
+            textAlignH = args.h or Aleft, -- does nothing??
+            textAlignV = args.v or Aright,
+            inheritAlpha = true,
+            --position = v2(40,10),
+            textColor = args and args.color or color.hex('FFFFFF'),
+            textSize = args.tSize or 10,
+            autoSize = args.aSize or false,
+            multiline = true, -- Enable multiline
+            wordWrap = true,  -- Enable word wrap
+        },
+    }
+    return textWidget
 end
 
 common.ui.makeIconContent = function(iconPath, args)
-    args = args or {}  -- Initialize args to an empty table if nil
+    args = args or {} -- Initialize args to an empty table if nil
     local sz = (args and args.size) and args.size or 24
     local iconWidget = {
-        name = iconPath and 'iconWidget/'..iconPath or 'iconWidget/',
+        name = iconPath and 'iconWidget/' .. iconPath or 'iconWidget/',
         type = ui.TYPE.Image,
-		props = {
-			resource = ui.texture({path = iconPath or 'white'}), -- No issue with the icon.. why isn't this dispalying. 
-			size = v2(sz, sz),
-			alpha = 1,
-			inheritAlpha = false,
-			visible = true,
-		},
+        props = {
+            resource = ui.texture({ path = iconPath or 'white' }), -- No issue with the icon.. why isn't this dispalying.
+            size = v2(sz, sz),
+            alpha = 1,
+            inheritAlpha = true,
+            visible = true,
+        },
         content = ui.content({}),
-	}
-	return iconWidget
+    }
+    return iconWidget
 end
 
 --This will be fed either Fxtable or a table of icons and text widgets
 common.ui.rootFlex = function(content, args, id)
-    args = args or {}  -- Initialize args to an empty table if nil
---[[     local size
+    args = args or {} -- Initialize args to an empty table if nil
+    --[[     local size
     if args.size then
         if args.size.x and args.size.y then
             -- Use both x and y values
@@ -490,49 +490,47 @@ common.ui.rootFlex = function(content, args, id)
     end ]]
 
     local rootFlex = {
-        name = id and 'rootFlex/'..id or 'rootFlex/'..content,
+        name = id and 'rootFlex/' .. id or 'rootFlex/' .. content,
         type = ui.TYPE.Flex,
-		props = {
-			horizontal = false, -- Stack vertically
-			--align = ui.ALIGNMENT.Center, -- Center the content
-			size = args.size and args.size or v2(30,60),
-			autoSize = args.aSize or false, -- Automatically size the container
-			align = Aleft,
-			arrange = Amid,
-		},
+        props = {
+            horizontal = false, -- Stack vertically
+            --align = ui.ALIGNMENT.Center, -- Center the content
+            size = args.size and args.size or v2(30, 60),
+            autoSize = args.aSize or false, -- Automatically size the container
+            align = Aleft,
+            arrange = Amid,
+        },
         userdata = {
             mouseOver = false,
             lastMousePos = nil
         },
         content = ui.content(content),
         events = {
-            mouseMove = async:callback(function(e,layout)
+            mouseMove = async:callback(function(e, layout)
                 --print("Mouse has moved onto icon", e.position, "Printing offset...",e.offset)
                 --print(layout.userdata.fx)
-                if TOOLTIP then -- handle updating the tooltip. 
+                if TOOLTIP then -- handle updating the tooltip.
                     TOOLTIP.layout.props.position = e.position
                     TOOLTIP.layout.props.anchor = setTooltipOffset(e.position)
                     if layout.userdata.fx then
-                        common.updateToolTipText(layout.userdata.fx,TOOLTIP)
+                        common.updateToolTipText(layout.userdata.fx, TOOLTIP)
                     end
-					TOOLTIP:update()
-					layout.userdata.lastMousePos = e.position
+                    TOOLTIP:update()
+                    layout.userdata.lastMousePos = e.position
                 elseif layout.userdata.fx then
                     TOOLTIP = common.ui.toolTipBox(layout.userdata.fx, layout, e.position) -- handle creating the tooltip if it does not exist
                     -- need to handle offsetting tool tip if the user sets the buffs to align on end, need to set anchor(-1,0)
-
                 end
             end),
-			focusLoss = async:callback(function(layout)
-				common.destroyTooltip()
-			end),
+            focusLoss = async:callback(function(layout)
+                common.destroyTooltip()
+            end),
         },
-	}
-	return rootFlex
-
+    }
+    return rootFlex
 end
 
-  -- content which needs to be dynamically updated and fed to flex box
+-- content which needs to be dynamically updated and fed to flex box
 common.createBuffsContent = function(returnType)
     --if not actor then return end
     local spellList = Actor.activeSpells(self)
@@ -551,34 +549,34 @@ common.createBuffsContent = function(returnType)
     for _, fx in ipairs(fxTable) do
         --some code to generare layouts
         local layout = {
-            name = fx.activeSpellId..'/'..fx.index..'/'..fx.id,
+            name = fx.activeSpellId .. '/' .. fx.index .. '/' .. fx.id,
             type = ui.TYPE.Image,
             props = {
-                position = v2(0,0),
+                position = v2(0, 0),
                 size = v2(24, 24),
-                relativePosition = v2(0,0),
-                relativeSize = v2(0,0),
-                anchor = v2(0,0),
+                relativePosition = v2(0, 0),
+                relativeSize = v2(0, 0),
+                anchor = v2(0, 0),
                 visible = true,
                 alpha = 1,
                 inheritAlpha = false,
-                resource = ui.texture({path = fx.icon or 'white'})
+                resource = ui.texture({ path = fx.icon or 'white' })
             },
             userdata = {
-            --some userdata
+                --some userdata
                 effectInfo = fx,
                 Duration = fx.duration,
                 DurationLeft = fx.durationLeft
             },
             events = {
-            -- Some events perhaps mouseover Tooltip
+                -- Some events perhaps mouseover Tooltip
             },
         }
 
         local paddedIcons = {
-            name = 'padded/'..fx.activeSpellId..'/'..fx.index..'/'..fx.id,
+            name = 'padded/' .. fx.activeSpellId .. '/' .. fx.index .. '/' .. fx.id,
             template = myTemplate.padding,
-            content = ui.content {layout}
+            content = ui.content { layout }
         }
 
         local element = ui.create(layout)
@@ -610,11 +608,11 @@ common.ui.createFlex = function(inputContent, direction)
         name = 'FLEXBUFFs',
         type = ui.TYPE.Flex,
         props = {
-            size = v2((24 +10)*12, (24 +10)*2), -- Adjust size as needed
-            horizontal = dir, -- Layout the icons horizontally
-            align = ui.ALIGNMENT.Start, -- Align the icons at the start
-            arrange = ui.ALIGNMENT.Start, -- Center the text below icons
-            anchor = v2(0,0),
+            size = v2((24 + 10) * 12, (24 + 10) * 2), -- Adjust size as needed
+            horizontal = dir,                   -- Layout the icons horizontally
+            align = ui.ALIGNMENT.Start,         -- Align the icons at the start
+            arrange = ui.ALIGNMENT.Start,       -- Center the text below icons
+            anchor = v2(0, 0),
             autoSize = false,
             inheritAlpha = false
         },
@@ -626,26 +624,29 @@ end
 -- New stuff 9-22-2024
 common.ui.boxForFlex = function(inputContent, pos)
     local rootWidget = {
-		layer = 'Windows',
-		template = I.MWUI.templates.boxTransparent,
+        layer = 'Windows',
+        template = I.MWUI.templates.boxTransparent,
         name = 'MainBuffBoundary',
-		props = {
+        props = {
             relativePosition = pos or v2(0.5, 0.5),
-			anchor = v2(0, 0),
-			alpha = 0.2,
-			position = v2(0,0)
-		},
-		content = ui.content{inputContent},
+            anchor = v2(0, 0),
+            alpha = 0.2,
+            position = v2(0, 0)
+        },
+        content = ui.content { inputContent },
         userData = {
             doDrag = false,
             lastMousePos = nil
         },
-	}
-	return rootWidget
+    }
+    return rootWidget
 end
 
 common.calculateRootFlexSize = function(children)
-    if not children then print("Nothing to calculate size on") return end
+    if not children then
+        print("Nothing to calculate size on")
+        return
+    end
     local maxWidth = 0
     local totalHeight = 0
     --local padding = 0  -- Example padding value
@@ -653,7 +654,7 @@ common.calculateRootFlexSize = function(children)
     for _, child in ipairs(children) do
         local childWidth = child.props.size.x
         local childHeight = child.props.size.y
-        
+
         -- Update maxWidth and totalHeight
         maxWidth = math.max(maxWidth, childWidth)
         totalHeight = totalHeight + childHeight -- Add padding between items
@@ -662,7 +663,7 @@ common.calculateRootFlexSize = function(children)
     -- Add additional padding for the container
     totalHeight = totalHeight
 
-    return v2(maxWidth, totalHeight)  -- Return the calculated size as a vector
+    return v2(maxWidth, totalHeight) -- Return the calculated size as a vector
 end
 
 -- New stuff 9-22-2024
@@ -671,65 +672,66 @@ common.ui.createElementContainer = function(inputContent, pos)
     -- Perhaps check if its length if table size is zero
     if not inputContent then inputContent = {} end -- Need to handle default state if input content is nil.
     local element = ui.create {
-		layer = 'Effects_Layer', -- changed to custom layer
-		template = I.MWUI.templates.boxTransparent,
+        layer = 'Effects_Layer',                   -- changed to custom layer
+        template = I.MWUI.templates.boxTransparent,
         name = 'MainBuffBoundary',
-		props = {
+        props = {
             relativePosition = pos or v2(0, 0),
-			anchor = v2(0, 0),
-			alpha = 0.2,
-			position = v2(0,0),
-		},
-		content = ui.content{inputContent,},
+            anchor = v2(0, 0),
+            alpha = 0.2,
+            position = v2(0, 0),
+        },
+        content = ui.content { inputContent, },
         userData = {
             doDrag = false,
             lastMousePos = nil
         },
-	}
-	return element
+    }
+    return element
 end
 --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 --new 09-25-2024 *** if the filter returns nothing(false), then this function returns empty tables
-common.createRootFlexLayouts = function(returnType,iconSize, fltr)
-	local spellList = Actor.activeSpells(self)
-	local myTemplate = {}
-	common.ui.customPadding(myTemplate)
-	-- create flat table with indexed effects
+common.createRootFlexLayouts = function(returnType, iconSize, fltr)
+    local spellList = Actor.activeSpells(self)
+    local myTemplate = {}
+    common.ui.customPadding(myTemplate)
+    -- create flat table with indexed effects
     local fxTable = common.createFxTable(spellList)
 
-	--track indexed alpha and durations values in order to recall later by index
-	local alphaIndex = {}
+    --track indexed alpha and durations values in order to recall later by index
+    local alphaIndex = {}
     local FxIndex = {}
     local timeIndex = {}
 
-	-- do some processing on fxTable to create widgets or elements
-	local root_layouts = {}
-	local padded_roots = {}
-    
+    -- do some processing on fxTable to create widgets or elements
+    local root_layouts = {}
+    local padded_roots = {}
+
     --Default size table
-    local sizeTable = {tSize = iconSize and iconSize*0.28 or 9, size ={x= iconSize and iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}}
+    local sizeTable = { tSize = iconSize and iconSize * 0.28 or 9, size = { x = iconSize and iconSize or 30, y = iconSize and (iconSize * 0.3 + 1) * 2 or 10 } }
 
 
 
-	for _, fx in ipairs(fxTable) do
+    for _, fx in ipairs(fxTable) do
         --print(fltr(fx))
-		if not fltr or (fltr ~= nil and fltr(fx)) then
+        if not fltr or (fltr ~= nil and fltr(fx)) then
             --local rootFlexInput = {}
-            local ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id
+            local ID = fx.activeSpellId .. '/' .. fx.index .. '/' .. fx.id
             local timeText = common.formatDuration(fx.durationLeft)
-            
+
             local fx_text
             local fx_icon
             local fx_timeRemain
-            local inText = showMagnitude and common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill] or nil
+            local inText = showMagnitude and common.attributeAlias[fx.affectedAttribute] or
+            common.skillAlias[fx.affectedSkill] or nil
             if inText then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
-                magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-"..magnitudeStr or magnitudeStr
+                magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-" .. magnitudeStr or magnitudeStr
                 -- Check if either inText or magnitude is longer than 3 or overall characters > 6
                 if (#inText > 3 or #magnitudeStr > 3) and (#inText + #magnitudeStr) > 6 then
                     --print('inText>3', #inText, fx.name)
-                    inText = inText .. ':\n' ..magnitudeStr
+                    inText = inText .. ':\n' .. magnitudeStr
                 else
                     inText = inText .. ': ' .. magnitudeStr
                 end
@@ -737,29 +739,32 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 fx_text.props.textColor = detailTextColor
                 --print(fx_text.name,fx_text.props.textSize)
             else
-                --If it has no effect just assign it a space holder. 
-                fx_text = common.ui.makeTextContent("",{tSize = iconSize*0.28 or 9, size ={x= iconSize or 30,y=iconSize and (iconSize*0.3+1)*2 or 10}, id = ID})
+                --If it has no effect just assign it a space holder.
+                fx_text = common.ui.makeTextContent("",
+                    { tSize = iconSize * 0.28 or 9, size = { x = iconSize or 30, y = iconSize and (iconSize * 0.3 + 1) * 2 or 10 }, id =
+                    ID })
             end
-            fx_icon = common.ui.makeIconContent(fx.icon,{size = iconSize or 30})
-            fx_icon.content:add(shader.Overlay(shader.radialWipe(fx),iconSize))
-            local timeArgs = {color = timerColor, h = Amid, tSize = iconSize*0.3+1 or 10, size ={x= iconSize or 30,y=iconSize and iconSize*0.3+1 or 10}}
-            fx_timeRemain =  common.ui.makeTextContent(timeText, timeArgs)
+            fx_icon = common.ui.makeIconContent(fx.icon, { size = iconSize or 30 })
+            fx_icon.content:add(shader.Overlay(shader.radialWipe(fx), iconSize))
+            local timeArgs = { color = timerColor, h = Amid, tSize = iconSize * 0.3 + 1 or 10, size = { x = iconSize or 30, y = iconSize and iconSize * 0.3 + 1 or 10 } }
+            fx_timeRemain = common.ui.makeTextContent(timeText, timeArgs)
 
             --Determine the rootFlexSize Props needed for children content
-            local rootFlexSize = common.calculateRootFlexSize({fx_text, fx_icon, fx_timeRemain})
+            local rootFlexSize = common.calculateRootFlexSize({ fx_text, fx_icon, fx_timeRemain })
             --fx_timeRemain.userdata.durationLeft = fx.duration and fx.durationLeft or nil
             --print(rootFlexSize)
-            local rootFlexWidget = common.ui.rootFlex({fx_text,fx_icon,fx_timeRemain}, {size = rootFlexSize, aSize = false},ID)
+            local rootFlexWidget = common.ui.rootFlex({ fx_text, fx_icon, fx_timeRemain },
+                { size = rootFlexSize, aSize = false }, ID)
             --local rootFlexWidget = common.ui.createImageWithText(45,fx.icon,timeText,fx.name,ID)
             rootFlexWidget.userdata.fx = fx
             rootFlexWidget.userdata.Duration = fx.duration
             rootFlexWidget.userdata.DurationLeft = fx.durationLeft
 
             local paddedFlexRoots = {
-                name = 'padded/'..ID,
+                name = 'padded/' .. ID,
                 template = myTemplate.padding,
-                content = ui.content {rootFlexWidget},
-                userdata = {fx = fx, Duration = fx.duration, DurationLeft = timeText}
+                content = ui.content { rootFlexWidget },
+                userdata = { fx = fx, Duration = fx.duration, DurationLeft = timeText }
             }
 
             table.insert(root_layouts, rootFlexWidget)
@@ -768,9 +773,9 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             table.insert(FxIndex, fx)
             table.insert(padded_roots, paddedFlexRoots)
         end
-	end
+    end
 
-	-- Return the structured table with effects grouped by unique keys
+    -- Return the structured table with effects grouped by unique keys
     if not returnType or returnType == 'content' then
         return root_layouts, alphaIndex, FxIndex, timeIndex
     elseif returnType == 'pad' then
@@ -784,40 +789,40 @@ end
 common.flexWrapper = function(content, args)
     -- Extract parameters from args
     if not content or #content == 0 then return end
-    local iconScale = args.iconScale or 1.0  -- Default to 1.0 if not provided
-    local textScale = args.textScale or 1.0  -- Default to 1.0 if not provided
-    local iconsPerRow = args.iconsPerRow or 2  -- Default to 10 icons per row if not provided
+    local iconScale = args.iconScale or 1.0   -- Default to 1.0 if not provided
+    local textScale = args.textScale or 1.0   -- Default to 1.0 if not provided
+    local iconsPerRow = args.iconsPerRow or 2 -- Default to 10 icons per row if not provided
     local rootSize
     local baseIconWidth
     local baseRowHeight
     local padding = false
     --print(content[1].name)
     --print(content[1].name)
-    
+
     --Need to handle if content[1] doesnt exist before trying to index it.
-    --Check if its padded if so, add that to the size calculation. 
-    if content[1].name and string.sub(content[1].name , 1, 3) == 'pad' then
+    --Check if its padded if so, add that to the size calculation.
+    if content[1].name and string.sub(content[1].name, 1, 3) == 'pad' then
         rootSize = common.calculateRootFlexSize(content[1].content)
         padding = true
         --print("It's Padded <=> RootSize: " .. rootSize.x ..","..rootSize.y)
-        baseIconWidth = args.baseIconWidth or (rootSize.x + 2 * borderV.x)  -- Default base width
-        baseRowHeight = args.baseRowHeight or (rootSize.y + 2 * borderV.y)  -- Default row height
+        baseIconWidth = args.baseIconWidth or (rootSize.x + 2 * borderV.x) -- Default base width
+        baseRowHeight = args.baseRowHeight or (rootSize.y + 2 * borderV.y) -- Default row height
     else
         rootSize = common.calculateRootFlexSize(content[1].content)
         --print("RootSize: " .. rootSize.x ..","..rootSize.y)
-        baseIconWidth = args.baseIconWidth or (rootSize.x)  -- Default base width
-        baseRowHeight = args.baseRowHeight or (rootSize.y)  -- Default row height
+        baseIconWidth = args.baseIconWidth or (rootSize.x) -- Default base width
+        baseRowHeight = args.baseRowHeight or (rootSize.y) -- Default row height
     end
 
     -- Calculate scaled dimensions
     local iconWidth = baseIconWidth * iconScale
     local rowHeight = baseRowHeight * iconScale
-    local containerWidth = iconWidth * iconsPerRow  -- Total width of each row
-    
+    local containerWidth = iconWidth * iconsPerRow -- Total width of each row
+
     -- Initialize layout variables
     local currentRowWidth = 0
-    local rows = { {} }  -- Each row starts as an empty table
-    local flexWidgets = {}  -- Store each row's flex widget
+    local rows = { {} }    -- Each row starts as an empty table
+    local flexWidgets = {} -- Store each row's flex widget
 
     -- Iterate through the icons (content table)
     for i, buff in ipairs(content) do
@@ -836,21 +841,21 @@ common.flexWrapper = function(content, args)
     for rowIndex, row in ipairs(rows) do
         --print("RowIndex is: ".. rowIndex)
         local flexRow = {
-            name = 'flexRow'..rowIndex,
+            name = 'flexRow' .. rowIndex,
             type = ui.TYPE.Flex,
             props = {
-                position = v2(0, 0),  -- Adjust vertical position dynamically
-                size = v2(containerWidth, rowHeight),  -- Set row width and height
-                horizontal = true,  -- Horizontal layout
-                anchor = v2(0, tonumber(rowIndex)),  -- Offset the widget vertically
+                position = v2(0, 0),                  -- Adjust vertical position dynamically
+                size = v2(containerWidth, rowHeight), -- Set row width and height
+                horizontal = true,                    -- Horizontal layout
+                anchor = v2(0, tonumber(rowIndex)),   -- Offset the widget vertically
                 align = args and args.Alignment or Aleft
             },
-            content = ui.content(row)  -- Add icons to the row
+            content = ui.content(row) -- Add icons to the row
         }
         table.insert(flexWidgets, flexRow)
     end
 
-    return flexWidgets  -- Return the table of flex rows
+    return flexWidgets -- Return the table of flex rows
 end
 
 common.fltBuffs = function(fx)
@@ -869,15 +874,15 @@ common.fltDebuffTimers = function(fx)
     return common.debuffs[fx.id] and fx.duration and fx
 end
 
--- Need to figure out how to handle this when the ui-modes omwscript is being used.. 
+-- Need to figure out how to handle this when the ui-modes omwscript is being used..
 -- it creates copies of the tooltip and doesnt clear them
-common.ui.toolTipBox = function(fxData,layoutData,position)
+common.ui.toolTipBox = function(fxData, layoutData, position)
     if not fxData then return end
     local fx = fxData
-    TOOLTIP_ID = fx.activeSpellId..'/'..fx.index..'/'..fx.id -- Update the tracked tooltip unique id
-    local inputText = fx.parentSpellName ..'\n'
+    TOOLTIP_ID = fx.activeSpellId .. '/' .. fx.index .. '/' .. fx.id -- Update the tracked tooltip unique id
+    local inputText = fx.parentSpellName .. '\n'
     if fx.name then
-       inputText = inputText..fx.name..' '
+        inputText = inputText .. fx.name .. ' '
     end
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
 
@@ -901,7 +906,7 @@ common.ui.toolTipBox = function(fxData,layoutData,position)
     --print(ui.showMessage(tostring(util.round(position.x))))
 
     --Handle how to position the tool Tip based on where icon is
---[[     local toolTipOffsetX
+    --[[     local toolTipOffsetX
     local toolTipOffsetY
 
     if (position.x/ui.layers[5].size.x) >= 0.5 then -- Indiactes mouse is on left hand side
@@ -919,21 +924,21 @@ common.ui.toolTipBox = function(fxData,layoutData,position)
 
     local tooltip = ui.create {
         layer = 'Notification',
-		template = I.MWUI.templates.boxSolid,
+        template = I.MWUI.templates.boxSolid,
         name = 'effect_tooltip',
-		props = {
+        props = {
             relativePosition = v2(0, 0),
-			anchor = offSet or v2(0, 0),
-			alpha = 1,
-			position = v2(0,0),
+            anchor = offSet or v2(0, 0),
+            alpha = 1,
+            position = v2(0, 0),
             --size = v2(500,500)
-		},
-		content = ui.content({
+        },
+        content = ui.content({
             {
-            template = I.MWUI.templates.padding,
-            props = {anchor = v2(0,0)},
-            content = ui.content({
-                displayText
+                template = I.MWUI.templates.padding,
+                props = { anchor = v2(0, 0) },
+                content = ui.content({
+                    displayText
                 })
             }
         }),
@@ -942,7 +947,7 @@ common.ui.toolTipBox = function(fxData,layoutData,position)
         },
     }
     --print("Printing the tooltipLayout ",tooltip.layout.content[1].content[1].props.text)
-return tooltip
+    return tooltip
 end
 
 -- Function to update the tooltip's text
@@ -951,23 +956,23 @@ common.updateTooltip = function()
     print(data, id)
     if TOOLTIP then
         -- Assuming TOOLTIP has a method to update its content
-        TOOLTIP:update()  -- Call an update method to change the text
+        TOOLTIP:update() -- Call an update method to change the text
     end
 end
 
 -- Function to destroy the tooltip
 common.destroyTooltip = function(checkExistence)
     if TOOLTIP and not checkExistence then
-        TOOLTIP:destroy()  -- Assuming your tooltip object has a destroy method
-        TOOLTIP = nil  -- Reset the global TOOLTIP variable
+        TOOLTIP:destroy() -- Assuming your tooltip object has a destroy method
+        TOOLTIP = nil     -- Reset the global TOOLTIP variable
     end
 
     if TOOLTIP_ID and checkExistence then
         --print("... Checking Icon for tooltip still exists")
         if not fxKey[TOOLTIP_ID] and TOOLTIP then
             --print("Icon_ID: "..TOOLTIP_ID.." does not Exist ... Destroying")
-            TOOLTIP:destroy()  -- Assuming your tooltip object has a destroy method
-            TOOLTIP = nil  -- Reset the global TOOLTIP variable
+            TOOLTIP:destroy() -- Assuming your tooltip object has a destroy method
+            TOOLTIP = nil     -- Reset the global TOOLTIP variable
             TOOLTIP_ID = nil
         end
     end
@@ -986,7 +991,7 @@ end
 common.updateToolTipText = function(fxData, tooltipElement)
     if not fxData then return end
     local fx = fxData
-    local inputText = fx.parentSpellName ..'\n'..fx.name.." "
+    local inputText = fx.parentSpellName .. '\n' .. fx.name .. " "
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
 
     -- Check for fx.magnitudeThisFrame and concatenate
@@ -999,13 +1004,13 @@ common.updateToolTipText = function(fxData, tooltipElement)
         inputText = inputText .. "Duration: " .. tostring(common.formatDuration(fx.durationLeft))
     end
     local displayText = common.ui.makeTextContent(inputText)
-	displayText.props.textColor = color.rgb(202 / 255, 165 / 255, 96 / 255)
+    displayText.props.textColor = color.rgb(202 / 255, 165 / 255, 96 / 255)
     displayText.props.autoSize = true
     displayText.props.textAlignH = Amid
     displayText.props.wordWrap = false
     displayText.props.textSize = 16
-	tooltipElement.layout.content[1].content = ui.content({displayText})
-	tooltipElement:update()
+    tooltipElement.layout.content[1].content = ui.content({ displayText })
+    tooltipElement:update()
 end
 
 return common
