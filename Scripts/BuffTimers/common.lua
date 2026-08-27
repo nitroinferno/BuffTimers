@@ -508,7 +508,7 @@ common.ui.rootFlex = function(content, args, id)
 			align = Aleft,
 			arrange = Amid,
 		},
-        userdata = {
+        userData = {
             mouseOver = false,
             lastMousePos = nil
         },
@@ -520,13 +520,13 @@ common.ui.rootFlex = function(content, args, id)
                 if TOOLTIP then -- handle updating the tooltip. 
                     TOOLTIP.layout.props.position = e.position
                     TOOLTIP.layout.props.anchor = setTooltipOffset(e.position)
-                    if layout.userdata.fx then
-                        common.updateToolTipText(layout.userdata.fx,TOOLTIP)
+                    if layout.userData.fx then
+                        common.updateToolTipText(layout.userData.fx,TOOLTIP)
                     end
 					TOOLTIP:update()
-					layout.userdata.lastMousePos = e.position
-                elseif layout.userdata.fx then
-                    TOOLTIP = common.ui.toolTipBox(layout.userdata.fx, layout, e.position) -- handle creating the tooltip if it does not exist
+					layout.userData.lastMousePos = e.position
+                elseif layout.userData.fx then
+                    TOOLTIP = common.ui.toolTipBox(layout.userData.fx, layout, e.position) -- handle creating the tooltip if it does not exist
                     -- need to handle offsetting tool tip if the user sets the buffs to align on end, need to set anchor(-1,0)
 
                 end
@@ -572,7 +572,7 @@ common.createBuffsContent = function(returnType)
                 inheritAlpha = false,
                 resource = ui.texture({path = fx.icon or 'white'})
             },
-            userdata = {
+            userData = {
             --some userdata
                 effectInfo = fx,
                 Duration = fx.duration,
@@ -636,7 +636,7 @@ common.ui.boxForFlex = function(inputContent, pos)
     local rootWidget = {
 		layer = 'Windows',
 		template = I.MWUI.templates.boxTransparent,
-        name = 'MainBuffBoundary',
+        name = 'ary',
 		props = {
             relativePosition = pos or v2(0.5, 0.5),
 			anchor = v2(0, 0),
@@ -781,15 +781,15 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 rootFlexWidget = common.ui.rootFlex({fx_text,fx_icon,fx_timeRemain}, {size = rootFlexSize, aSize = false},ID)
                 --rootFlexWidget:add(fx_timeRemain)
             end
-            rootFlexWidget.userdata.fx = fx
-            rootFlexWidget.userdata.Duration = fx.duration
-            rootFlexWidget.userdata.DurationLeft = fx.durationLeft
+            rootFlexWidget.userData.fx = fx
+            rootFlexWidget.userData.Duration = fx.duration
+            rootFlexWidget.userData.DurationLeft = fx.durationLeft
 
             local paddedFlexRoots = {
                 name = 'padded/'..ID,
                 template = myTemplate.padding,
                 content = ui.content {rootFlexWidget},
-                userdata = {fx = fx, Duration = fx.duration, DurationLeft = timeText}
+                --userdata = {fx = fx, Duration = fx.duration, DurationLeft = timeText}
             }
 
             table.insert(root_layouts, rootFlexWidget)
@@ -970,7 +970,7 @@ common.ui.toolTipBox = function(fxData,layoutData,position)
                 })
             }
         }),
-        userdata = {
+        userData = {
             origin = layoutData
         },
     }

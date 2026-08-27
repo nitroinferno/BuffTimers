@@ -26,6 +26,10 @@ local iconOptions = "Select which options you want for the icons the following o
 local sizeAndPosition = "Enable this to show the area box where buff icons will be rendered. When enabled allows click + drag on buff/debuff regions for repositioning." 
 .."\n\nMouse Release saves the position, press '-' key to reset to default position."
 
+local SavePositions = input.KEY.Equals
+local resetPositions = input.KEY.Minus
+local toggleBox = input.KEY.Semicolon
+
 local menuParams = {
 	const = {
 
@@ -83,7 +87,7 @@ I.Settings.registerGroup {
 		setting("detailTextColor","color",{}, "Buff Details Text Color", "Text color of skill, attribute and magnitude for buffs and debuffs ",util.color.hex('DFC99F')),
 		setting("iconPadding","checkbox",{}, "Pad Icons", "Put Padding around the buff Icons", true),
 		setting("rowLimit","inputText",{defaultValue = 15}, "Max number of debuffs or buffs per row", "Set the limit on how many buffs or debuffs to show per row. Default is 15, min/max is: 1/100", 15),
-		setting("buffLimit","inputText",{defaultValue = 100}, "Max number of debuffs or buffs to display", "Set the limit on how many buffs or debuffs can be shown. Default is 100, min/max is: 1/100", 100),
+		setting("buffLimit","inputText",{defaultValue = 45}, "Max number of debuffs or buffs to display", "Set the limit on how many buffs or debuffs can be shown. Default is 45, min/max is: 1/100", 100),
 		setting("radialSwipe","myToggle",{}, "Radial Swipe Options", "Radial swipe effect as time decreases: Shade / Unshade\nRequires Reload to take effect.", "Unshade"),
 		setting("timerOptions", "select", {l10n = modInfo.name, items = {"Bottom", "Mid", "Top"}}, "Timer Text Position Options.", "Which position to place Timer.", "Bottom"),
 	}
@@ -97,6 +101,9 @@ I.Settings.registerGroup {
 	name = "Controls",
 	permanentStorage = false,
 	settings = {
+		setting("hotKeySave", "inputKeySelection", {}, "hotKeyTest1", "hotKeyTest description 1", SavePositions),
+		setting("hotKeyReset", "inputKeySelection", {}, "hotKeyTest2", "hotKeyTest description 2", resetPositions),
+		setting("hotKeyBorderShow", "inputKeySelection", {}, "hotKeyTest3", "hotKeyTest description 3", toggleBox),
 		--Add settings here
 	}
 }

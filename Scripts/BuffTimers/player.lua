@@ -230,8 +230,8 @@ local dummyLayout = ui.content {
             inheritAlpha = false,
             resource = ui.texture({path = 'white'})
         },
-        userdata = {
-        --some userdata
+        userData = {
+        --some userData
             --Duration = fx.duration,
         },
         events = {
@@ -353,10 +353,10 @@ end
 local function updateEffectGroupVisuals(group, alphaValue, tooltipData, tooltipRootName)
     for i, layout in ipairs(group.rootLayouts) do
         if tooltipData and layout.name == tooltipRootName then
-            com.updateToolTipText(layout.userdata.fx, tooltipData)
+            com.updateToolTipText(layout.userData.fx, tooltipData)
         end
 
-        if layout.userdata.Duration and layout.userdata.fx.durationLeft < 10 then
+        if layout.userData.Duration and layout.userData.fx.durationLeft < 10 then
             group.wraps[i].props.alpha = alphaValue
         end
     end
@@ -371,7 +371,7 @@ local function buildEffectGroup(def)
     local flex = com.ui.createFlex(rows, false)
     updateFlexWrapProps(flex, rows)
      d_print("buildEffectGroup()","Printing showBox var:".. tostring(showBox))
-    local element = com.ui.createElementContainer(flex, nil, showBox and 'Modal') -- create element define layer (Modal to display on topmost layer)
+    local element = com.ui.createElementContainer(flex, nil, showBox and 'Settings') -- create element define layer (Modal to display on topmost layer)
     element.layout.userData.positionKey = def.positionKey -- Store a unique ID for buffPos or debuffPos
     d_print("buildEffectGroup()", "Printing layer"..element.layout.layer)
 
@@ -472,7 +472,7 @@ local function updateUI_Element()
     if iconOptions ~= '3' then updateAlpha() end
 
     local tooltipData = com.getTooltip()
-    local rootNameTT = tooltipData and tooltipData.layout.userdata.origin.name --name of the root layout
+    local rootNameTT = tooltipData and tooltipData.layout.userData.origin.name --name of the root layout
 
     for _, g in pairs(effectGroups) do
         updateEffectGroupVisuals(g, alpha, tooltipData, rootNameTT)
@@ -651,14 +651,19 @@ userInterfaceSettings:subscribe(async:callback(function(section, key)
             end
         elseif key == "timerColor" then
             timerColor = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
         elseif key == "detailTextColor" then
             detailTextColor = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
         elseif key == "iconPadding" then
             iconPadding = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
         elseif key == "rowLimit" then
             rowLimit = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
         elseif key == "buffLimit" then
             buffLimit = userInterfaceSettings:get(key)
+            rebuildAllEffectGroups()
         elseif key == "showMagnitude" then
             rebuildAllEffectGroups()
         elseif key == "textScale" then
