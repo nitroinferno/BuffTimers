@@ -2,11 +2,39 @@ local util = require('openmw.util')
 local ui = require('openmw.ui')
 local async = require('openmw.async')
 local I = require('openmw.interfaces')
+local input = require('openmw.input')
+local ui_builders = require('Scripts.inputTest.ui_builders')
 local v2 = util.vector2
 
 local DEFAULT_VALUE = 24 -- Default scaling value
 local MIN_VALUE = 1    -- Minimum allowable value
 local MAX_VALUE = 100     -- Maximum allowable value
+
+local msg = "Current Bound Key: "
+local msgNew = "New KeyBind: "
+
+local activeCapture = nil
+local activePopup = nil
+local t = nil
+
+local controllerButtonNames = {
+    [-1] = 'Invalid',
+    [input.CONTROLLER_BUTTON.A] = "A",
+    [input.CONTROLLER_BUTTON.B] = "B",
+    [input.CONTROLLER_BUTTON.X] = "X",
+    [input.CONTROLLER_BUTTON.Y] = "Y",
+    [input.CONTROLLER_BUTTON.Back] = "Back",
+    [input.CONTROLLER_BUTTON.Guide] = "Guide",
+    [input.CONTROLLER_BUTTON.Start] = "Start",
+    [input.CONTROLLER_BUTTON.LeftStick] = "L3",
+    [input.CONTROLLER_BUTTON.RightStick] = "R3",
+    [input.CONTROLLER_BUTTON.LeftShoulder] = "LB",
+    [input.CONTROLLER_BUTTON.RightShoulder] = "RB",
+    [input.CONTROLLER_BUTTON.DPadUp] = "D-pad Up",
+    [input.CONTROLLER_BUTTON.DPadDown] = "D-pad Down",
+    [input.CONTROLLER_BUTTON.DPadLeft] = "D-pad Left",
+    [input.CONTROLLER_BUTTON.DPadRight] = "D-pad Right",
+}
 
 local function validateInput(input, defaultValue)
     local numValue = tonumber(input)  -- Try converting the input to a number
@@ -107,3 +135,240 @@ I.Settings.registerRenderer(
         }
     end
 )
+
+-- Controller Functions and Renderers ---
+-- =========================================================
+-- GLOBAL CLOSE (single authority)
+-- =========================================================
+local function closeBindingUI()
+    activeCapture = nil
+
+    if activePopup then
+        activePopup:destroy()
+        activePopup = nil
+    end
+end
+
+-- =========================================================
+-- STATE RESET (local only)
+-- =========================================================
+local function resetState(state)
+    if not state then return end
+    state.capturedButton = nil
+    state.capturedKey = nil
+    state.confirmed = false
+    state.cleared = false
+end
+
+-- =========================================================
+-- INPUT CAPTURE
+-- =========================================================
+local function handleInputCapture(inputType, idOrCode)
+    if not activeCapture then return end
+
+    local tempTime = os.time()
+    --print("timeinsideinputhandler",t)
+    if tempTime - t < 1 then
+        --print("Input ignored due to time guard:", tempTime - t)
+        return
+    end
+
+    local state = activeCapture.state
+    local element = activeCapture.element
+
+    if not element then return end
+
+    -- ownership guard (prevents stale closures writing wrong UI)
+    if activeCapture.state ~= state then
+        return
+    end
+
+    -- already captured, ignore spam
+    if state.capturedButton or state.capturedKey then
+        return
+    end
+
+    -- keyboard input
+    if inputType == "keyboard" then
+        state.capturedKey = idOrCode
+    elseif inputType == "controller" then
+        state.capturedButton = controllerButtonNames[idOrCode]
+    end
+
+    local displayName
+    if state.capturedButton then
+        displayName = state.capturedButton
+    elseif state.capturedKey then
+        local ok, keyName = pcall(input.getKeyName, state.capturedKey)
+        displayName = ok and keyName or tostring(state.capturedKey)
+    end
+
+    if element and element.layout then
+        element.layout.content.sizeWrapper.content.DisplayText.props.text =
+            (msgNew .. string.upper(displayName or "No Key Set"))
+        element:update()
+    end
+end
+
+-- =========================================================
+-- RENDERER
+-- =========================================================
+I.Settings.registerRenderer(
+"inputKeySelection",
+function(value, set)
+
+    local element = nil
+
+    local state = {
+        capturedButton = nil,
+        capturedKey = nil,
+        confirmed = false,
+        cleared = false,
+    }
+
+    local function refresh(newVal)
+        set(newVal)
+    end
+
+    local ok, keyName = pcall(input.getKeyName, value)
+    local currentVal = ok and keyName or value
+    local bindLabel = currentVal and string.upper(currentVal) or "No Key Set"
+
+    local BindingBox = ui_builders.BoxBuilder:new()
+        :setTemplate(I.MWUI.templates.boxSolidThick)
+        :setSize(util.vector2(300, 150))
+        :setRelativePosition(util.vector2(0.5, 0.5))
+        :setLayer('Settings')
+        :addChild(ui_builders.ButtonBuilder:new()
+            :setText("Confirm")
+            :setSize(util.vector2(120, 40))
+            :setRelativePosition(util.vector2(0.75, 0.88))
+            :onClick(function()
+                if activeCapture and activeCapture.state == state then
+                    if state.cleared then
+                        refresh("Unset")
+                    elseif state.capturedButton then
+                        refresh(state.capturedButton)
+                    elseif state.capturedKey then
+                        refresh(state.capturedKey)
+                    else
+                        refresh(currentVal)
+                    end
+                    activeCapture = nil
+                end
+                resetState(state)
+                closeBindingUI()
+            end)
+            :build())
+        :addChild(ui_builders.ButtonBuilder:new()
+            :setText("Clear")
+            :setSize(util.vector2(120, 40))
+            :setRelativePosition(util.vector2(0.5, 0.88))
+            :onClick(function()
+                state.capturedButton = nil
+                state.capturedKey = nil
+                state.cleared = true
+                t = os.time()
+                if element then
+                    element.layout.content.sizeWrapper.content.DisplayText.props.text =
+                        (msgNew .. "No Key Set")
+                    element:update()
+                end
+            end)
+            :build())
+        :addChild(ui_builders.ButtonBuilder:new()
+            :setText("Cancel")
+            :setSize(util.vector2(120, 40))
+            :setRelativePosition(util.vector2(0.25, 0.88))
+            :onClick(function()
+                closeBindingUI()
+                resetState(state)
+            end)
+            :build())
+
+        :addChild(ui_builders.textBuilder:new()
+            :setName("DisplayText")
+            :setText(msg)
+            :setRelativePosition(util.vector2(0.5, 0.5))
+            :setAnchor(util.vector2(0.5, 0.5))
+            :build())
+        :build()
+
+        local bindButtonWidget = ui_builders.ButtonBuilder:new()
+        :setText("Key Binding Menu")
+        :setSize(util.vector2(120, 40))
+        :onClick(function()
+            closeBindingUI()
+            t = os.time()
+            --print(t)
+            state.capturedButton = nil
+            state.capturedKey = nil
+            state.cleared = false
+            element = ui.create(BindingBox)
+            activePopup = element
+
+            activeCapture = {
+                state = state,
+                element = element,
+                refresh = refresh
+            }
+
+            element.layout.content.sizeWrapper.content.DisplayText.props.text =
+                value and (msg .. string.upper(currentVal)) or (msg .. "No Key Set")
+        end)
+        :build()
+
+        local keyLabelLayout = ui_builders.textBuilder:new()
+        :setName("currentKeyLabel")
+        :setText(bindLabel)
+        :setAnchor(util.vector2(0, 0.5))
+        :build()
+
+        local bindButton = {
+        type = ui.TYPE.Flex,
+        props = {
+            horizontal = true,
+            autoSize = true,
+            arrange = ui.ALIGNMENT.Center,
+        },
+        content = ui.content {
+            keyLabelLayout,
+            { template = I.MWUI.templates.interval },
+            bindButtonWidget,
+        },
+    }
+
+    return bindButton
+end
+)
+
+-- =========================================================
+-- ENGINE HANDLERS
+-- =========================================================
+return {
+    eventHandlers = {
+        E_ControllerPress = handleInputCapture,
+    },
+
+    engineHandlers = {
+        onControllerButtonPress = function(id)
+            local name = controllerButtonNames[id]
+
+            if name == "B" then
+                closeBindingUI()
+                return
+            end
+
+            handleInputCapture("controller", id)
+        end,
+
+        onKeyPress = function(key)
+            if key.code == input.KEY.Escape then
+                closeBindingUI()
+                return
+            end
+
+            handleInputCapture("keyboard", key.code)
+        end,
+    }
+}

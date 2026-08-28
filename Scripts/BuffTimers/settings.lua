@@ -101,9 +101,9 @@ I.Settings.registerGroup {
 	name = "Controls",
 	permanentStorage = false,
 	settings = {
-		setting("hotKeySave", "inputKeySelection", {}, "hotKeyTest1", "hotKeyTest description 1", SavePositions),
-		setting("hotKeyReset", "inputKeySelection", {}, "hotKeyTest2", "hotKeyTest description 2", resetPositions),
-		setting("hotKeyBorderShow", "inputKeySelection", {}, "hotKeyTest3", "hotKeyTest description 3", toggleBox),
+		setting("hotKeySave", "inputKeySelection", {}, "Save Position Keybind", "Keybind to save Position. (Repositioning should autosave position, this is a failsafe)", SavePositions),
+		setting("hotKeyReset", "inputKeySelection", {}, "Reset Position Keybind", "Key to Reset buff/debuff box positions to default", resetPositions),
+		setting("hotKeyBorderShow", "inputKeySelection", {}, "", "Keybind to Toggle Size & Positioning Mode (Buff/Debuff Box Borders).", toggleBox),
 		--Add settings here
 	}
 }
