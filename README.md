@@ -4,11 +4,19 @@ Lua scripts that puts buff and debuffs onto the screen.
 ![Buffs With Timers](/photos/screencap1.png?raw=true)
 ## DESCRIPTION
 There are 2 separate icon windows one for buffs and one for debuffs that can be user configured to limit the total buffs, how many buffs per row, size, and font colors. 
-Each buff can be repositioned to anywhere on the HUD by just clicking and dragging the window box. Set the display box setting to 'Yes' to see the buff box space, while you have no buffs or debuffs present
+Each buff can be repositioned to anywhere on the HUD by just clicking and dragging the window box. Set the display box setting to 'Yes' OR press the ';' key in game to see the buff box space.
 
-+ The buff box positions can be saved by pressing the '=' key. If you need to reset their positions to the default press '-'.
-+ Saving your game will also store your buff/debuff box positions now.
+A new Feature has been added to combine buff and debuff boxes into a single box.
+Radial swipe is user configurable as well as timer position
+Display of skill & attribue alias/abbreviation and magnitude text can be set on or off.
+Constant Effects can be set to be displayed or hidden.  
+
++ Buff/debuff box positions should save automatically after repositioning.  
 + To show/hide the buff box borders press ';'. When borders are shown you can click and drag the buff/debuffs to any position you like.
++ The buff box positions can be saved by pressing the '=' key (This is a failsafe if for whatever reason your positioning is not saving). If you need to reset their positions to the default press '-'.
+
+### The Above keybinds are user configurable and support gamepad button binding as well. If the Keybinds are not needed they may be set to none. 
+
 
 The buff icons have tooltip mouseover support as well. 
 
