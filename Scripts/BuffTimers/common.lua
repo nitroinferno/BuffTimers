@@ -783,6 +783,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 sizeTable["id"] = ID
                 fx_text = common.ui.makeTextContent(string.lower(inText), sizeTable)
                 fx_text.props.textColor = detailTextColor
+                if toption == "Mid2" then fx_text.props.textAlignV = ui.ALIGNMENT.Start end
                 --print(fx_text.name,fx_text.props.textSize)
             else
                 --If it has no effect just assign it a space holder.
@@ -808,6 +809,12 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 fx_icon.content:add(fx_timeRemain)
                 rootFlexSize = common.calculateRootFlexSize({fx_text, fx_icon})
                 rootFlexWidget = common.ui.rootFlex({fx_text,fx_icon}, {size = rootFlexSize, aSize = false},ID)
+            elseif toption == "Mid2" then
+                fx_timeRemain.props.anchor = v2(0.5,0.5)
+                fx_timeRemain.props.relativePosition = v2(0.5,0.5)
+                fx_icon.content:add(fx_timeRemain)
+                rootFlexSize = common.calculateRootFlexSize({fx_icon, fx_text})
+                rootFlexWidget = common.ui.rootFlex({fx_icon, fx_text}, {size = rootFlexSize, aSize = false},ID)
             elseif toption == "Top" then
                 fx_text.props.textAlignV = ui.ALIGNMENT.Start
                 rootFlexSize = common.calculateRootFlexSize({fx_text, fx_icon, fx_timeRemain})
