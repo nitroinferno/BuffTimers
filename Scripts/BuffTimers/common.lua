@@ -394,6 +394,7 @@ end
 -- New stuff 9-22-2024
 common.createFxTable = function(spellList)
     local fxTable = {}
+    local constantFx = {}
     fxKey = {} -- clear out stale old keys.
     -- Iterate over active spells
     for _, spells in pairs(spellList) do
@@ -411,26 +412,61 @@ common.createFxTable = function(spellList)
             -- Otherwise use default effect
             for _, effect in pairs(spells.effects) do
                 -- Create a copy of the effect and add activeSpellId
-                local effectWithId = {
-                    activeSpellId = activeSpellId,
-                    id = effect.id,
-                    name = effect.name,
-                    index = effect.index,
-                    minMagnitude = effect.minMagnitude,
-                    maxMagnitude = effect.maxMagnitude,
-                    duration = effect.duration,
-                    durationLeft = effect.durationLeft,
-                    magnitudeThisFrame = effect.magnitudeThisFrame,
-                    affectedSkill = effect.affectedSkill,
-                    affectedAttribute = effect.affectedAttribute,
-                    icon = magRecs[effect.id].icon,
-                    parentSpellName = spells.name
-                }
-                local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
-                fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
-                table.insert(fxTable, effectWithId)
+                if effect.duration then
+                    local effectWithId = {
+                        activeSpellId = activeSpellId,
+                        id = effect.id,
+                        name = effect.name,
+                        index = effect.index,
+                        minMagnitude = effect.minMagnitude,
+                        maxMagnitude = effect.maxMagnitude,
+                        duration = effect.duration,
+                        durationLeft = effect.durationLeft,
+                        magnitudeThisFrame = effect.magnitudeThisFrame,
+                        affectedSkill = effect.affectedSkill,
+                        affectedAttribute = effect.affectedAttribute,
+                        icon = magRecs[effect.id].icon,
+                        parentSpellName = spells.name
+                    }
+                    --print(effectWithId.name, effectWithId.id)
+                    local uniqueKey = activeSpellId..'/'..effect.index..'/'..effect.id
+                    fxKey[uniqueKey] = true -- Add the unique Effect as a key to the fxKey table
+                    table.insert(fxTable, effectWithId)
+                else
+                    local effectWithId = {
+                        activeSpellId = activeSpellId,
+                        id = effect.id,
+                        name = effect.name,
+                        index = effect.index,
+                        minMagnitude = effect.minMagnitude,
+                        maxMagnitude = effect.maxMagnitude,
+                        duration = effect.duration,
+                        durationLeft = effect.durationLeft,
+                        magnitudeThisFrame = effect.magnitudeThisFrame,
+                        affectedSkill = effect.affectedSkill,
+                        affectedAttribute = effect.affectedAttribute,
+                        icon = magRecs[effect.id].icon,
+                        parentSpellName = spells.name
+                    }
+                    if constantFx[effect.name] then
+                        constantFx[effect.name].minMagnitude = constantFx[effect.name].minMagnitude + effectWithId.minMagnitude
+                        constantFx[effect.name].maxMagnitude = constantFx[effect.name].maxMagnitude + effectWithId.maxMagnitude
+                        constantFx[effect.name].magnitudeThisFrame = constantFx[effect.name].magnitudeThisFrame + effectWithId.magnitudeThisFrame
+                        constantFx[effect.name].parentSpellName = constantFx[effect.name].parentSpellName .. ', ' .. effectWithId.parentSpellName
+                    else
+                        constantFx[effect.name] = effectWithId
+                    end
+                    local uniqueKeyConst = 'CONSTANT/'..effect.name
+                    fxKey[uniqueKeyConst] = true -- Add the unique Constant Effect as a key to the fxKey table              
+                    -- table.insert(fxTable, constantFx[effect.name])
+                    --print(constantFx[effect.name].mmaxmagnitude, constantFx[effect.name].minMagnitude, constantFx[effect.name].magnitudeThisFrame)
+                end
+
             end
         end
+    end
+    for _, effect in pairs(constantFx) do
+        table.insert(fxTable, effect)
     end
     return fxTable
 end
@@ -1016,10 +1052,51 @@ common.getTooltip = function()
     return TOOLTIP, TOOLTIP_ID
 end
 
+local function wrapCSV(input, maxLen)
+    maxLen = maxLen or 32
+    local output = ""
+    local currentLine = ""
+
+    -- Split the input string by commas and iterate through each spellStr, ^, means any string not containing a comma
+    for spellStr in string.gmatch(input, "([^,]+)") do
+        local candidate
+        if currentLine == "" then
+            candidate = spellStr
+        else
+            candidate = currentLine .. "," .. spellStr
+        end
+
+        if #candidate > maxLen and currentLine ~= "" then
+            output = output .. currentLine .. "\n"
+            -- strip only a single leading space, only because this
+            -- token is now starting a brand new line
+            currentLine = spellStr:gsub("^ ", "", 1)
+        else
+            currentLine = candidate
+        end
+    end
+
+    if currentLine ~= "" then
+        output = output .. currentLine
+    end
+
+    return output
+end
+
+-- Example usage:
+local input = "apple, banana, cherrylongname, dog, elephanttrunk, fig, grape, honeydewmelon, boots of blinding speed"
+local result = wrapCSV(input, 32)
+print(result)
+
 common.updateToolTipText = function(fxData, tooltipElement)
     if not fxData then return end
     local fx = fxData
-    local inputText = fx.parentSpellName ..'\n'..fx.name.." "
+    local inputText = ""
+    if fx.duration then
+        inputText = fx.parentSpellName ..'\n'..fx.name.." "
+    else
+        inputText = wrapCSV(fx.parentSpellName, 42) ..'\n'..fx.name.." "
+    end
     --inputText = fx.affectedAttribute and inputText .."("..fx.affectedAttribute..")" or fx.affectedSkill and inputText .."("..fx.affectedSkill..")"
 
     -- Check for fx.magnitudeThisFrame and concatenate
@@ -1039,6 +1116,7 @@ common.updateToolTipText = function(fxData, tooltipElement)
     displayText.props.textSize = 16
 	tooltipElement.layout.content[1].content = ui.content({displayText})
 	tooltipElement:update()
+    print("TOOLTIP UPDATE CALL")
 end
 
 return common

@@ -353,7 +353,7 @@ end
 local function updateEffectGroupVisuals(group, alphaValue, tooltipData, tooltipRootName)
     for i, layout in ipairs(group.rootLayouts) do
         if tooltipData and layout.name == tooltipRootName then
-            com.updateToolTipText(layout.userData.fx, tooltipData)
+            --com.updateToolTipText(layout.userData.fx, tooltipData)
         end
 
         if layout.userData.Duration and layout.userData.fx.durationLeft < 10 then
@@ -448,7 +448,7 @@ end
 getBoxSetting()
 -- Function that updates both Buffs and Debuffs in UI
 local function updateUI_Element()
-    com.destroyTooltip(true)
+    --com.destroyTooltip(true)
 	getBoxSetting()
 
     for _, g in pairs(effectGroups) do
