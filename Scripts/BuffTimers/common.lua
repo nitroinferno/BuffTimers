@@ -832,7 +832,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 name = 'padded/'..ID,
                 template = myTemplate.padding,
                 content = ui.content {rootFlexWidget},
-                --userdata = {fx = fx, Duration = fx.duration, DurationLeft = timeText}
+                userData = {fx = fx, Duration = fx.duration, DurationLeft = timeText}
             }
 
             table.insert(root_layouts, rootFlexWidget)
