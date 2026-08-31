@@ -3,7 +3,7 @@ local ui = require('openmw.ui')
 local async = require('openmw.async')
 local I = require('openmw.interfaces')
 local input = require('openmw.input')
-local ui_builders = require('Scripts.inputTest.ui_builders')
+local ui_builders = require('Scripts.BuffTimers.ui_builders')
 local v2 = util.vector2
 
 local DEFAULT_VALUE = 24 -- Default scaling value
