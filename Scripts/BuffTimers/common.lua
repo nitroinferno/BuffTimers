@@ -1090,11 +1090,6 @@ local function wrapCSV(input, maxLen)
     return output
 end
 
--- Example usage:
-local input = "apple, banana, cherrylongname, dog, elephanttrunk, fig, grape, honeydewmelon, boots of blinding speed"
-local result = wrapCSV(input, 32)
-print(result)
-
 common.updateToolTipText = function(fxData, tooltipElement)
     if not fxData then return end
     local fx = fxData
