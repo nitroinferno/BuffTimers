@@ -34,6 +34,7 @@ local wasPaused = false -- Track the previous pause state
 
 local modInfo = require("Scripts.BuffTimers.modInfo")
 local API = require("Scripts.BuffTimers.api")
+local controllerButtonNames = require('Scripts.BuffTimers.controllerButtons')
 
 local playerSettings = storage.playerSection("SettingsPlayer" .. modInfo.name)
 local userInterfaceSettings = storage.playerSection("SettingsPlayer" .. modInfo.name .. "UI")
@@ -214,32 +215,6 @@ local function getContentKeys(contentLayer, debugF)
     end
     return contentNames
 end
-
-local dummyLayout = ui.content {
-    {
-        name = 'someString',
-        type = ui.TYPE.Image,
-        props = {
-            position = v2(0,0),
-            size = v2(24, 24),
-            relativePosition = v2(0,0),
-            relativeSize = v2(0,0),
-            anchor = v2(0,0),
-            visible = true,
-            alpha = 1,
-            inheritAlpha = false,
-            resource = ui.texture({path = 'white'})
-        },
-        userData = {
-        --some userData
-            --Duration = fx.duration,
-        },
-        events = {
-        -- Some events perhaps mouseover Tooltip
-        },
-    },
-}
-
 
 local function getAlignment(alignment)
     return alignment and ui.ALIGNMENT.Start or ui.ALIGNMENT.End
@@ -505,9 +480,9 @@ local function stopUpdating()
 end
 
 local function onKeyPress(key)
-    local SavePositions = input.KEY.Equals
-    local resetPositions = input.KEY.Minus
-    local toggleBox = input.KEY.Semicolon
+    local SavePositions = controlsSettings:get("hotKeySave")
+    local resetPositions = controlsSettings:get("hotKeyReset")
+    local toggleBox = controlsSettings:get("hotKeyBorderShow")
     if (not playerSettings:get("modEnable")) or (key.code ~= SavePositions) and (key.code ~= resetPositions) and (key.code ~= toggleBox) or core.isWorldPaused()  then return end
 
     if key.code == SavePositions then
@@ -545,6 +520,49 @@ local function onKeyPress(key)
     end
 end
 
+local function onControllerButtonPress(id)
+    local buttonName = controllerButtonNames[id]
+    if not buttonName then return end
+
+    local SavePositions = controlsSettings:get("hotKeySave")
+    local resetPositions = controlsSettings:get("hotKeyReset")
+    local toggleBox = controlsSettings:get("hotKeyBorderShow")
+
+    if (not playerSettings:get("modEnable"))
+        or (buttonName ~= SavePositions) and (buttonName ~= resetPositions) and (buttonName ~= toggleBox)
+        or core.isWorldPaused() then
+        return
+    end
+
+    if buttonName == SavePositions then
+        print("Saving Positions onControllerButtonPress...")
+        local stored = {}
+        for _, group in pairs(effectGroups) do
+            local element = group.element
+            if element then
+                local pos = element.layout and element.layout.props and element.layout.props.position
+                if pos and group.positionKey then
+                    stored[group.positionKey] = pos
+                end
+            end
+        end
+        uiPositions:set("BuffPositions", stored)
+        buffPositions = stored
+    end
+
+    if buttonName == resetPositions then
+        print("Reset Positions onControllerButtonPress...")
+        local reset = {buffPos = v2(0,0), debuffPos = v2(0,0)}
+        uiPositions:set("BuffPositions", reset)
+        buffPositions = reset
+        applyPositionsToGroups(reset)
+    end
+
+    if buttonName == toggleBox then
+        userInterfaceSettings:set("showBox", not showBox)
+    end
+end
+
 local function onKeyRelease(key)
 
 end
@@ -577,18 +595,14 @@ local function onFrame(dt)
 
     if chargenFinishedFlag == false then
         --print("Chargen not finished yet checking...")
-        if types.Player.isCharGenFinished(self) and showBox == false then
-            userInterfaceSettings:set("showBox", true)
+        if types.Player.isCharGenFinished(self) then
+            chargenFinishedFlag = true --Latch to set when chargen is finished. 
+            if showBox == false then
+                userInterfaceSettings:set("showBox", true)
+            end
         end
         return
     end
-
-    -- if dt ~= 0 or wasPaused == true then return end --indicates not paused
-    -- wasPaused = true -- Set pause toggle
-
-    -- if wasPaused then
-    --     --print("Game paused!")
-    -- end
 
 end
 
@@ -699,8 +713,9 @@ return {
     interfaceName = 'BuffTimers',
     interface = API.interface,
     engineHandlers = {
-       onKeyPress = onKeyPress,
-       onKeyRelease = onKeyRelease,
+        onKeyPress = onKeyPress,
+        onKeyRelease = onKeyRelease,
+        onControllerButtonPress = onControllerButtonPress,
         onUpdate = onUpdate,
         onSave = onSave,
         onLoad = onLoad,

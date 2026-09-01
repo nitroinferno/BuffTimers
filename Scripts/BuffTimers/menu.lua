@@ -1,3 +1,4 @@
+print('MENU_LUA_LOADED_' .. os.time())
 local util = require('openmw.util')
 local ui = require('openmw.ui')
 local async = require('openmw.async')
@@ -17,24 +18,7 @@ local activeCapture = nil
 local activePopup = nil
 local t = nil
 
-local controllerButtonNames = {
-    [-1] = 'Invalid',
-    [input.CONTROLLER_BUTTON.A] = "A",
-    [input.CONTROLLER_BUTTON.B] = "B",
-    [input.CONTROLLER_BUTTON.X] = "X",
-    [input.CONTROLLER_BUTTON.Y] = "Y",
-    [input.CONTROLLER_BUTTON.Back] = "Back",
-    [input.CONTROLLER_BUTTON.Guide] = "Guide",
-    [input.CONTROLLER_BUTTON.Start] = "Start",
-    [input.CONTROLLER_BUTTON.LeftStick] = "L3",
-    [input.CONTROLLER_BUTTON.RightStick] = "R3",
-    [input.CONTROLLER_BUTTON.LeftShoulder] = "LB",
-    [input.CONTROLLER_BUTTON.RightShoulder] = "RB",
-    [input.CONTROLLER_BUTTON.DPadUp] = "D-pad Up",
-    [input.CONTROLLER_BUTTON.DPadDown] = "D-pad Down",
-    [input.CONTROLLER_BUTTON.DPadLeft] = "D-pad Left",
-    [input.CONTROLLER_BUTTON.DPadRight] = "D-pad Right",
-}
+local controllerButtonNames = require('Scripts.BuffTimers.controllerButtons')
 
 local function validateInput(input, defaultValue)
     local numValue = tonumber(input)  -- Try converting the input to a number
