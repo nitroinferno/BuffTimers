@@ -769,9 +769,8 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
             local fx_text
             local fx_icon
             local fx_timeRemain
-            local inText
-            if showMagnitude and (common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill]) then
-                inText =  (common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill])
+            local inText = showMagnitude and (common.attributeAlias[fx.affectedAttribute] or common.skillAlias[fx.affectedSkill]) or nil
+            if inText then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
                 magnitudeStr = common.skillAttributeNeg_Fx[fx.id] and "-"..magnitudeStr or magnitudeStr
                 -- Check if either inText or magnitude is longer than 3 or overall characters > 6
@@ -786,7 +785,7 @@ common.createRootFlexLayouts = function(returnType,iconSize, fltr)
                 fx_text.props.textColor = detailTextColor
                 if toption == "Mid2" then fx_text.props.textAlignV = ui.ALIGNMENT.Start end
                 --print(fx_text.name,fx_text.props.textSize)
-            elseif showMagnitude then
+            elseif showMagnitude and fx.magnitudeThisFrame then
                 local magnitudeStr = tostring(util.round(fx.magnitudeThisFrame))
                 inText = magnitudeStr
                 sizeTable["id"] = ID
