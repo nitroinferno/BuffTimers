@@ -31,6 +31,7 @@ local borderV = v2(1,1) * 3
 local magRecs = core.magic.effects.records
 local mgFx = core.magic.EFFECT_TYPE
 local Actor = types.Actor
+local spellList = Actor.activeSpells(self)
 
 local xRes = ui.screenSize().x
 local yRes = ui.screenSize().y
@@ -579,7 +580,7 @@ end
   -- content which needs to be dynamically updated and fed to flex box
 common.createBuffsContent = function(returnType)
     --if not actor then return end
-    local spellList = Actor.activeSpells(self)
+    --local spellList = Actor.activeSpells(self)
     --added on PC:
     local myTemplate = {}
     common.ui.customPadding(myTemplate)
@@ -934,7 +935,7 @@ common.flexWrapper = function(content, args)
 end
 
 common.fltBuffs = function(fx)
-    return common.buffs[fx.id] and fx
+    return not common.debuffs[fx.id] and fx
 end
 
 common.fltDebuffs = function(fx)
@@ -942,7 +943,7 @@ common.fltDebuffs = function(fx)
 end
 
 common.fltBuffTimers = function(fx)
-    return common.buffs[fx.id] and fx.duration and fx
+    return not common.debuffs[fx.id] and fx.duration and fx
 end
 
 common.fltDebuffTimers = function(fx)
