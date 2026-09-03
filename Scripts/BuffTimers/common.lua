@@ -951,7 +951,7 @@ common.fltDebuffTimers = function(fx)
 end
 
 common.fltTimeFx = function(fx)
-    return (common.buffs[fx.id] or common.debuffs[fx.id]) and fx.duration and fx
+    return fx.duration and fx
 end
 -- Need to figure out how to handle this when the ui-modes omwscript is being used.. 
 -- it creates copies of the tooltip and doesnt clear them
